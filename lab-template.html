@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<!--
+==================================================================================
+  REUSABLE LAB PAGE TEMPLATE  ·  v1
+==================================================================================
+  HOW TO USE THIS FILE
+  --------------------
+  1. Copy this file and rename it, e.g.  lab1.html , lab6.html .
+  2. Edit the marked sections below. Search for the word  EDIT  to jump to each.
+  3. Reusable building blocks are wrapped in comment markers like:
+         <!-- ===== BLOCK: TASK (copy this whole block per task) ===== -->
+     Copy the entire block to add another task / question / checklist item / etc.
+  4. Variables: write  <span class="tok" data-tok="fqdn"></span>  anywhere in the
+     page and it auto-fills from the "Lab Configuration" panel. Available tokens:
+         fqdn        -> Student FQDN
+         password    -> Session Password
+         studentid   -> Student ID
+         last3       -> last 3 chars of Student ID (e.g. tenant suffix)
+  5. Hero image: drop your image at  images/lab-hero.png  (or change the src).
+     If the file is missing, a styled gradient banner shows automatically.
+  6. Everything (config, notes, checklist) saves to the browser via localStorage,
+     so it persists per-student when hosted on GitHub Pages.
+==================================================================================
+-->
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<!-- EDIT: page title (shows in browser tab) -->
+<title>Lab 1: Lab Title — COURSE-CODE</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@500;600;700;800&family=Hanken+Grotesk:ital,wght@0,400;0,500;0,600;1,400&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+<style>
+:root{
+  --ink:#12161d;            /* primary text / dark surfaces */
+  --ink-2:#3b424f;          /* secondary text */
+  --ink-3:#6b7280;          /* muted text */
+  --paper:#f5f4ef;          /* page background (warm off-white) */
+  --card:#ffffff;           /* card surfaces */
+  --line:#e4e2d9;           /* hairlines / borders */
+  --line-2:#d3d0c4;
+  --accent:#1f5fe0;         /* primary accent (network blue) */
+  --accent-deep:#143fa3;
+  --teal:#0f9c8f;           /* secondary accent (verify / success) */
+  --signal:#b4530a;         /* think-first / model answer (rust amber) */
+  --signal-bg:#fbf2e7;
+  --danger:#b3261e;         /* block-mode / warnings */
+  --danger-bg:#fbecea;
+  --radius:14px;
+  --shadow:0 1px 2px rgba(18,22,29,.05), 0 10px 30px -18px rgba(18,22,29,.28);
+  --mono:'JetBrains Mono',ui-monospace,Menlo,Consolas,monospace;
+  --sans:'Hanken Grotesk',system-ui,sans-serif;
+  --display:'Sora',var(--sans);
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  margin:0;font-family:var(--sans);color:var(--ink);background:var(--paper);
+  line-height:1.62;font-size:16.5px;-webkit-font-smoothing:antialiased;
+  background-image:radial-gradient(circle at 1px 1px,rgba(18,22,29,.045) 1px,transparent 0);
+  background-size:26px 26px;
+}
+.wrap{max-width:880px;margin:0 auto;padding:0 22px}
+
+/* reading-progress bar */
+#progress-bar{position:fixed;top:0;left:0;height:3px;width:0;background:var(--accent);z-index:60;transition:width .1s linear}
+
+/* breadcrumb */
+.crumbs{font-family:var(--mono);font-size:12px;letter-spacing:.04em;color:var(--ink-3);padding:22px 0 0}
+.crumbs a{color:var(--ink-2);text-decoration:none;border-bottom:1px dotted var(--line-2)}
+.crumbs a:hover{color:var(--accent)}
+.crumbs span{margin:0 7px;color:var(--line-2)}
+
+/* eyebrow label (the "LAB 6 · ZPA" tag) */
+.eyebrow{display:inline-flex;align-items:center;gap:9px;font-family:var(--mono);font-size:11.5px;
+  font-weight:600;letter-spacing:.16em;text-transform:uppercase;color:var(--accent);
+  background:#eaf0fd;border:1px solid #d3e0fb;padding:6px 12px;border-radius:999px;margin:26px 0 14px}
+.eyebrow::before{content:"";width:7px;height:7px;border-radius:50%;background:var(--accent)}
+
+/* hero */
+.hero-title{font-family:var(--display);font-weight:800;font-size:clamp(34px,6vw,56px);
+  line-height:1.02;letter-spacing:-.02em;margin:0 0 18px}
+.hero-title em{font-style:italic;font-weight:600;color:var(--accent)}
+.lede{font-size:18.5px;color:var(--ink-2);max-width:62ch;margin:0 0 30px}
+
+/* hero image banner */
+.hero-banner{position:relative;border-radius:var(--radius);overflow:hidden;border:1px solid var(--line);
+  box-shadow:var(--shadow);aspect-ratio:16/6.2;margin:8px 0 6px;
+  background:linear-gradient(115deg,var(--ink) 0%,#1b2740 45%,var(--accent-deep) 100%)}
+.hero-banner img{width:100%;height:100%;object-fit:cover;display:block}
+.hero-banner .fallback{position:absolute;inset:0;display:flex;align-items:flex-end;padding:24px;color:#fff;
+  background:
+    radial-gradient(120% 140% at 85% 10%,rgba(31,95,224,.5),transparent 55%),
+    repeating-linear-gradient(135deg,rgba(255,255,255,.04) 0 2px,transparent 2px 22px)}
+.hero-banner .fallback b{font-family:var(--display);font-size:20px;font-weight:700;letter-spacing:-.01em}
+
+/* meta row */
+.meta{display:flex;flex-wrap:wrap;gap:10px;margin:22px 0}
+.meta .pill{display:flex;gap:7px;align-items:baseline;font-size:13.5px;background:var(--card);
+  border:1px solid var(--line);border-radius:10px;padding:8px 13px}
+.meta .pill b{font-family:var(--mono);font-size:11px;letter-spacing:.05em;text-transform:uppercase;color:var(--ink-3)}
+
+/* generic section heading */
+h2.section{font-family:var(--display);font-weight:700;font-size:27px;letter-spacing:-.01em;
+  margin:46px 0 4px;padding-top:30px;border-top:1px solid var(--line)}
+h3{font-family:var(--display);font-weight:600;font-size:18px;margin:26px 0 8px}
+p{margin:0 0 14px}
+a{color:var(--accent)}
+
+/* callout boxes (scenario / note / verify / danger) */
+.box{border:1px solid var(--line);border-radius:var(--radius);padding:18px 20px;margin:20px 0;background:var(--card);box-shadow:var(--shadow)}
+.box .tag{font-family:var(--mono);font-size:11px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;display:inline-block;margin-bottom:8px}
+.box.scenario{border-left:4px solid var(--accent)} .box.scenario .tag{color:var(--accent)}
+.box.note{border-left:4px solid var(--teal)} .box.note .tag{color:var(--teal)}
+.box.verify{border-left:4px solid var(--teal);background:#f0faf8} .box.verify .tag{color:var(--teal)}
+.box.warn{border-left:4px solid var(--danger);background:var(--danger-bg)} .box.warn .tag{color:var(--danger)}
+.box.mental{border:1px dashed var(--line-2);background:#fbfaf6}
+.box p:last-child{margin-bottom:0}
+
+/* tokens (variables) */
+.tok{font-family:var(--mono);font-size:.92em;background:#eef3fe;border:1px solid #d6e2fb;
+  border-radius:6px;padding:1px 7px;color:var(--accent-deep);white-space:nowrap}
+.tok:empty::before{content:"‹set in config›";color:var(--ink-3)}
+
+/* inline + block code */
+code{font-family:var(--mono);font-size:.9em;background:#eeece5;border:1px solid var(--line);border-radius:5px;padding:1px 6px}
+.code{position:relative;font-family:var(--mono);font-size:13.5px;line-height:1.55;background:var(--ink);color:#e8eef7;
+  border-radius:10px;padding:15px 50px 15px 16px;margin:12px 0;white-space:pre-wrap;word-break:break-word}
+.code .copy-btn{position:absolute;top:9px;right:9px}
+
+/* copy button */
+.copy-btn{font-family:var(--mono);font-size:11px;font-weight:600;letter-spacing:.04em;cursor:pointer;
+  background:rgba(255,255,255,.1);color:#cdd7e6;border:1px solid rgba(255,255,255,.18);
+  border-radius:7px;padding:5px 9px;transition:.15s}
+.copy-btn:hover{background:rgba(255,255,255,.2);color:#fff}
+.copy-btn.light{background:var(--card);color:var(--ink-2);border:1px solid var(--line)}
+.copy-btn.light:hover{border-color:var(--accent);color:var(--accent)}
+.copy-btn.copied{background:var(--teal);color:#fff;border-color:var(--teal)}
+
+/* steps list */
+ol.steps{counter-reset:step;list-style:none;padding:0;margin:14px 0}
+ol.steps>li{position:relative;padding:2px 0 14px 40px;margin:0}
+ol.steps>li::before{counter-increment:step;content:counter(step);position:absolute;left:0;top:0;
+  width:27px;height:27px;border-radius:8px;background:var(--ink);color:#fff;font-family:var(--mono);
+  font-size:13px;font-weight:600;display:flex;align-items:center;justify-content:center}
+ol.steps ul{margin:8px 0 0;padding-left:18px}
+ol.steps ul li{margin:3px 0}
+
+/* details / collapsible (tasks, quiz, model answers, quick ref) */
+details{border:1px solid var(--line);border-radius:var(--radius);margin:14px 0;background:var(--card);overflow:hidden;box-shadow:var(--shadow)}
+details>summary{cursor:pointer;list-style:none;padding:16px 20px;font-family:var(--display);font-weight:600;
+  font-size:16.5px;display:flex;align-items:center;gap:12px}
+details>summary::-webkit-details-marker{display:none}
+details>summary::after{content:"+";margin-left:auto;font-family:var(--mono);font-size:20px;color:var(--ink-3);transition:.2s}
+details[open]>summary::after{transform:rotate(45deg)}
+details>summary:hover{color:var(--accent)}
+details .body{padding:2px 20px 20px}
+.tasknum{font-family:var(--mono);font-size:11px;font-weight:600;letter-spacing:.1em;color:#fff;
+  background:var(--accent);border-radius:6px;padding:3px 8px}
+
+/* THINK FIRST quiz block */
+.quiz{border:1px solid #ecd9c2;background:var(--signal-bg);border-radius:var(--radius);padding:20px;margin:24px 0}
+.quiz>.tag{font-family:var(--mono);font-size:11.5px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--signal);display:flex;align-items:center;gap:8px;margin-bottom:6px}
+.quiz>.tag::before{content:"💭"}
+.q{margin:16px 0;padding-top:16px;border-top:1px solid #ecd9c2}
+.q:first-of-type{border-top:none;padding-top:4px}
+.q .qtext{font-weight:500;margin-bottom:10px}
+.q textarea{width:100%;min-height:62px;font-family:var(--sans);font-size:14.5px;border:1px solid var(--line-2);
+  border-radius:9px;padding:9px 12px;resize:vertical;background:#fff;color:var(--ink)}
+.q textarea:focus{outline:none;border-color:var(--signal)}
+.q .answer{margin-top:10px;border:1px solid #ecd9c2;border-radius:9px;background:#fff}
+.q .answer summary{padding:11px 14px;font-family:var(--mono);font-size:12px;font-weight:600;letter-spacing:.05em;color:var(--signal);box-shadow:none}
+.q .answer summary::after{content:"▾"}
+.q .answer[open] summary::after{content:"▴"}
+.q .answer .body{padding:0 14px 14px;font-size:14.5px;color:var(--ink-2)}
+
+/* notes / questions area */
+.scratch{display:grid;gap:14px;grid-template-columns:1fr 1fr;margin:16px 0}
+@media(max-width:640px){.scratch{grid-template-columns:1fr}}
+.scratch .pad{border:1px solid var(--line);border-radius:12px;background:var(--card);padding:13px}
+.scratch .pad .hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+.scratch .pad .hd b{font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-3)}
+.scratch textarea{width:100%;min-height:80px;border:1px solid var(--line);border-radius:9px;padding:9px 11px;
+  font-family:var(--sans);font-size:14px;resize:vertical;background:#fbfaf6;color:var(--ink)}
+.scratch textarea:focus{outline:none;border-color:var(--accent);background:#fff}
+
+/* lab configuration panel */
+.config{border:1px solid var(--line);border-radius:var(--radius);background:var(--card);box-shadow:var(--shadow);margin:22px 0}
+.config summary{padding:15px 20px;font-family:var(--display);font-weight:600;display:flex;align-items:center;gap:10px}
+.config summary::before{content:"⚙";font-size:18px}
+.config .body{display:flex;flex-wrap:wrap;gap:14px;align-items:flex-end;padding:2px 20px 20px}
+.config .field{display:flex;flex-direction:column;gap:5px}
+.config label{font-family:var(--mono);font-size:11px;letter-spacing:.05em;text-transform:uppercase;color:var(--ink-3)}
+.config input{font-family:var(--mono);font-size:14px;border:1px solid var(--line-2);border-radius:8px;padding:8px 11px;min-width:200px;background:#fbfaf6}
+.config input:focus{outline:none;border-color:var(--accent);background:#fff}
+.btn{font-family:var(--display);font-weight:600;font-size:14px;cursor:pointer;border-radius:9px;padding:9px 16px;border:1px solid transparent}
+.btn.primary{background:var(--accent);color:#fff}
+.btn.primary:hover{background:var(--accent-deep)}
+.btn.ghost{background:transparent;color:var(--ink-2);border-color:var(--line-2)}
+.btn.ghost:hover{border-color:var(--ink-2)}
+
+/* progress checklist */
+.progress-wrap{border:1px solid var(--line);border-radius:var(--radius);background:var(--card);box-shadow:var(--shadow);padding:20px;margin:30px 0}
+.progress-wrap .hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.progress-wrap .hd b{font-family:var(--mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-3)}
+.progress-wrap .count{font-family:var(--display);font-weight:700;font-size:15px;color:var(--accent)}
+.bar{height:8px;border-radius:99px;background:var(--line);overflow:hidden;margin-bottom:16px}
+.bar>span{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--accent),var(--teal));transition:width .35s ease}
+.check{display:flex;gap:11px;align-items:flex-start;padding:7px 0;border-top:1px dashed var(--line)}
+.check:first-of-type{border-top:none}
+.check input{margin-top:4px;width:17px;height:17px;accent-color:var(--accent);cursor:pointer}
+.check label{cursor:pointer;font-size:14.5px}
+.check input:checked + label{color:var(--ink-3);text-decoration:line-through}
+
+/* quick reference footer */
+table.qref{width:100%;border-collapse:collapse;font-size:14px}
+table.qref tr{border-top:1px solid var(--line)}
+table.qref tr:first-child{border-top:none}
+table.qref td{padding:11px 6px;vertical-align:top}
+table.qref td:first-child{font-family:var(--display);font-weight:600;width:38%;color:var(--ink)}
+table.qref td:last-child{color:var(--ink-2)}
+
+/* footer / nav */
+.foot{margin:50px 0 40px;padding-top:26px;border-top:1px solid var(--line)}
+.labnav{display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap;margin:18px 0}
+.labnav a{flex:1;min-width:220px;text-decoration:none;border:1px solid var(--line);border-radius:12px;padding:14px 16px;background:var(--card);transition:.15s}
+.labnav a:hover{border-color:var(--accent)}
+.labnav .dir{font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-3)}
+.labnav .ttl{font-family:var(--display);font-weight:600;color:var(--ink);display:block;margin-top:2px}
+.labnav a.next{text-align:right}
+.tagline{text-align:center;font-style:italic;color:var(--ink-3);margin:26px 0 0;font-size:15px}
+.courseline{text-align:center;font-family:var(--mono);font-size:11.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-3);margin-top:18px}
+
+/* entrance animation */
+.reveal{opacity:0;transform:translateY(14px);animation:rise .6s cubic-bezier(.2,.7,.3,1) forwards}
+@keyframes rise{to{opacity:1;transform:none}}
+
+.toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--ink);
+  color:#fff;font-size:13px;padding:10px 18px;border-radius:99px;opacity:0;pointer-events:none;transition:.25s;z-index:80}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+</style>
+</head>
+<body>
+<div id="progress-bar"></div>
+
+<div class="wrap">
+
+  <!-- ============ EDIT: breadcrumb ============ -->
+  <nav class="crumbs">
+    <a href="index.html">Course Labs</a><span>›</span>
+    <a href="index.html">COURSE-CODE</a><span>›</span>
+    Lab 1
+  </nav>
+
+  <!-- ============ EDIT: hero ============ -->
+  <span class="eyebrow">Lab 1 · Service Name</span>
+  <h1 class="hero-title">Lab <em>Title</em></h1>
+  <p class="lede">
+    One- or two-sentence overview of what this lab does and why it matters.
+    Replace this with your lab's introduction.
+  </p>
+
+  <!-- ============ Lab Configuration (variables) ============ -->
+  <!-- Students fill these once; tokens across the page auto-fill. Saved in-browser. -->
+  <details class="config" open>
+    <summary>Lab Configuration</summary>
+    <div class="body">
+      <div class="field"><label>Student FQDN</label><input id="cfg-fqdn" placeholder="student.example.com"></div>
+      <div class="field"><label>Session Password</label><input id="cfg-password" placeholder="••••••"></div>
+      <div class="field"><label>Student ID</label><input id="cfg-studentid" placeholder="000312"></div>
+      <button class="btn primary" onclick="saveConfig()">Save</button>
+      <button class="btn ghost" onclick="clearConfig()">Clear</button>
+    </div>
+  </details>
+
+  <!-- ============ EDIT: hero image ============ -->
+  <!-- Put your image at images/lab-hero.png . If missing, the gradient fallback shows. -->
+  <div class="hero-banner reveal">
+    <img src="images/lab-hero.png" alt="Lab hero" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+    <div class="fallback" style="display:none"><b>Lab 1 — Title</b></div>
+  </div>
+
+  <!-- ============ EDIT: scenario + meta ============ -->
+  <div class="box scenario reveal">
+    <span class="tag">Scenario</span>
+    <p>Describe the role the student is playing and the goal of the lab. Tokens work here too —
+       e.g. log in as <code>student@<span class="tok" data-tok="fqdn"></span></code>.</p>
+  </div>
+
+  <div class="meta">
+    <span class="pill"><b>Time</b> ~30 min</span>
+    <span class="pill"><b>Service</b> Service Name</span>
+    <span class="pill"><b>Prerequisite</b> Something running</span>
+  </div>
+
+  <!-- ============ EDIT: THINK FIRST quiz block ============ -->
+  <!-- ===== BLOCK: QUIZ QUESTION (copy each .q to add another) ===== -->
+  <div class="quiz reveal">
+    <span class="tag">Think First · Concept</span>
+
+    <div class="q">
+      <div class="qtext">First conceptual question to prime the student before they configure anything?</div>
+      <textarea data-note="q1-answer" placeholder="Your answer…"></textarea>
+      <details class="answer">
+        <summary>See Model Answer</summary>
+        <div class="body"><p>Model answer text goes here. Explain the concept clearly.</p></div>
+      </details>
+    </div>
+
+    <div class="q">
+      <div class="qtext">Second conceptual question?</div>
+      <textarea data-note="q2-answer" placeholder="Your answer…"></textarea>
+      <details class="answer">
+        <summary>See Model Answer</summary>
+        <div class="body"><p>Model answer for question 2.</p></div>
+      </details>
+    </div>
+  </div>
+  <!-- ===== END BLOCK: QUIZ QUESTION ===== -->
+
+  <h2 class="section">Lab 1: Lab Title</h2>
+
+  <!-- ============ EDIT: TASKS ============ -->
+  <!-- ===== BLOCK: TASK (copy this entire <details> to add another task) ===== -->
+  <details open>
+    <summary><span class="tasknum">Task 1.1</span> Short task title</summary>
+    <div class="body">
+      <p>Optional intro paragraph for the task. Use tokens like
+         <span class="tok" data-tok="studentid"></span> wherever a student value appears.</p>
+
+      <h3>Step group heading (optional)</h3>
+      <ol class="steps">
+        <li>First action the student performs. Navigate to <b>Menu &gt; Sub-menu</b>.</li>
+        <li>Second action, with a nested detail list:
+          <ul>
+            <li><b>Name:</b> <code>example-name</code></li>
+            <li><b>Value:</b> something</li>
+          </ul>
+        </li>
+        <li>An action that includes a command or payload to copy:
+          <div class="code">1' or '1'='1<button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+        </li>
+        <li>Final action, then <b>Save</b>.</li>
+      </ol>
+
+      <div class="box note"><span class="tag">Note</span><p>An explanatory note that adds context.</p></div>
+
+      <!-- per-task notes + questions -->
+      <div class="scratch">
+        <div class="pad"><div class="hd"><b>My Questions</b><button class="copy-btn light" onclick="copyPad(this)">Copy</button></div>
+          <textarea data-note="t1.1-q" placeholder="Anything you want to ask the instructor…"></textarea></div>
+        <div class="pad"><div class="hd"><b>My Notes</b><button class="copy-btn light" onclick="copyPad(this)">Copy</button></div>
+          <textarea data-note="t1.1-n" placeholder="Your notes…"></textarea></div>
+      </div>
+    </div>
+  </details>
+  <!-- ===== END BLOCK: TASK ===== -->
+
+  <details>
+    <summary><span class="tasknum">Task 1.2</span> Second task title</summary>
+    <div class="body">
+      <ol class="steps">
+        <li>Step one.</li>
+        <li>Step two.</li>
+      </ol>
+      <div class="box verify"><span class="tag">Verify</span><p>How the student confirms the task worked.</p></div>
+    </div>
+  </details>
+
+  <!-- ============ EDIT: mental note (key takeaway) ============ -->
+  <div class="box mental reveal">
+    <span class="tag">🧠 Mental Note</span>
+    <p>The one or two things the student should remember after this lab. A concise recap of the workflow.</p>
+  </div>
+
+  <!-- ============ EDIT: progress checklist ============ -->
+  <!-- ===== BLOCK: CHECKLIST ITEM (copy each .check to add another) ===== -->
+  <div class="progress-wrap reveal">
+    <div class="hd"><b>Lab 1 Progress</b><span class="count" id="prog-count">0 / 0</span></div>
+    <div class="bar"><span id="prog-fill"></span></div>
+    <div class="check"><input type="checkbox" id="c1"><label for="c1">First completion criterion</label></div>
+    <div class="check"><input type="checkbox" id="c2"><label for="c2">Second completion criterion</label></div>
+    <div class="check"><input type="checkbox" id="c3"><label for="c3">Third completion criterion</label></div>
+  </div>
+  <!-- ===== END BLOCK: CHECKLIST ITEM ===== -->
+
+  <!-- ============ EDIT: quick reference footer ============ -->
+  <!-- ===== BLOCK: QUICK-REF ROW (copy each <tr> to add another) ===== -->
+  <details>
+    <summary>Quick Reference</summary>
+    <div class="body">
+      <table class="qref">
+        <tr><td>Some navigation path</td><td>Menu &gt; Sub-menu &gt; Setting</td></tr>
+        <tr><td>Credentials</td><td><code>admin</code> / <code>password</code></td></tr>
+        <tr><td>Key payload</td><td><code>1' or '1'='1</code></td></tr>
+      </table>
+    </div>
+  </details>
+  <!-- ===== END BLOCK: QUICK-REF ROW ===== -->
+
+  <!-- ============ EDIT: footer + lab navigation ============ -->
+  <div class="foot">
+    <div class="labnav">
+      <a class="prev" href="#"><span class="dir">← Previous</span><span class="ttl">Lab 0: Setup</span></a>
+      <a class="next" href="#"><span class="dir">Next →</span><span class="ttl">Lab 2: Next Topic</span></a>
+    </div>
+    <p class="tagline">A short, memorable closing line for the lab.</p>
+    <p class="courseline">COURSE-CODE · Course Full Name</p>
+  </div>
+
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ---------- storage helpers (never throw, so the page works even if storage is blocked) ---------- */
+const KEY='lab-template-v1';   /* change per course if you want separate saved data */
+function load(){try{return JSON.parse(localStorage.getItem(KEY))||{}}catch(e){return{}}}
+function save(o){try{localStorage.setItem(KEY,JSON.stringify(o))}catch(e){}}
+let store=load();
+store.cfg=store.cfg||{}; store.notes=store.notes||{}; store.checks=store.checks||{};
+
+/* ---------- toast ---------- */
+let tT;function toast(m){const t=document.getElementById('toast');t.textContent=m;t.classList.add('show');clearTimeout(tT);tT=setTimeout(()=>t.classList.remove('show'),1600)}
+
+/* ---------- tokens (variable substitution) ---------- */
+const PLACEHOLD={fqdn:'‹FQDN›',password:'‹password›',studentid:'‹student ID›',last3:'‹id›'};
+function applyTokens(){
+  document.querySelectorAll('.tok').forEach(el=>{
+    const k=el.dataset.tok;let v;
+    if(k==='last3'){const id=store.cfg.studentid||'';v=id?id.slice(-3):'';}
+    else v=store.cfg[k]||'';
+    el.textContent = v || PLACEHOLD[k] || ('‹'+k+'›');
+  });
+}
+function saveConfig(){
+  store.cfg.fqdn=document.getElementById('cfg-fqdn').value.trim();
+  store.cfg.password=document.getElementById('cfg-password').value.trim();
+  store.cfg.studentid=document.getElementById('cfg-studentid').value.trim();
+  save(store);applyTokens();toast('Configuration saved');
+}
+function clearConfig(){
+  store.cfg={};save(store);
+  ['fqdn','password','studentid'].forEach(k=>document.getElementById('cfg-'+k).value='');
+  applyTokens();toast('Configuration cleared');
+}
+
+/* ---------- copy buttons ---------- */
+function flash(btn){btn.classList.add('copied');const o=btn.textContent;btn.textContent='Copied';setTimeout(()=>{btn.classList.remove('copied');btn.textContent=o},1200)}
+function doCopy(txt,btn){
+  if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(txt).then(()=>flash(btn)).catch(()=>fallbackCopy(txt,btn));}
+  else fallbackCopy(txt,btn);
+}
+function fallbackCopy(txt,btn){const ta=document.createElement('textarea');ta.value=txt;document.body.appendChild(ta);ta.select();try{document.execCommand('copy');flash(btn)}catch(e){}document.body.removeChild(ta)}
+function copyCode(btn){const c=btn.parentElement.cloneNode(true);c.querySelector('.copy-btn')?.remove();doCopy(c.textContent.trim(),btn)}
+function copyPad(btn){const ta=btn.closest('.pad').querySelector('textarea');doCopy(ta.value,btn)}
+
+/* ---------- notes / answers persistence ---------- */
+function bindNotes(){
+  document.querySelectorAll('[data-note]').forEach(ta=>{
+    const k=ta.dataset.note;
+    if(store.notes[k]!=null)ta.value=store.notes[k];
+    ta.addEventListener('input',()=>{store.notes[k]=ta.value;save(store)});
+  });
+}
+
+/* ---------- checklist + progress ---------- */
+function bindChecks(){
+  const boxes=[...document.querySelectorAll('.progress-wrap input[type=checkbox]')];
+  const fill=document.getElementById('prog-fill'),count=document.getElementById('prog-count');
+  function update(){
+    const done=boxes.filter(b=>b.checked).length;
+    if(count)count.textContent=done+' / '+boxes.length;
+    if(fill)fill.style.width=(boxes.length?done/boxes.length*100:0)+'%';
+  }
+  boxes.forEach(b=>{
+    if(store.checks[b.id])b.checked=true;
+    b.addEventListener('change',()=>{store.checks[b.id]=b.checked;save(store);update()});
+  });
+  update();
+}
+
+/* ---------- reading progress bar ---------- */
+window.addEventListener('scroll',()=>{
+  const h=document.documentElement;const sc=(h.scrollTop)/(h.scrollHeight-h.clientHeight)*100;
+  document.getElementById('progress-bar').style.width=sc+'%';
+});
+
+/* ---------- init ---------- */
+(function(){
+  ['fqdn','password','studentid'].forEach(k=>{if(store.cfg[k])document.getElementById('cfg-'+k).value=store.cfg[k];});
+  applyTokens();bindNotes();bindChecks();
+})();
+</script>
+</body>
+</html>
