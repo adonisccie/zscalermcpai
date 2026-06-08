@@ -1,0 +1,821 @@
+<!DOCTYPE html>
+<!--
+==================================================================================
+  Lab 1 — Zscaler One API and MCP with Claude AI
+  Features: auto+manual dark mode · data-tok tokens
+  Author: Adonis Li · Lead Technical Instructor
+==================================================================================
+-->
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lab 1: Zscaler MCP + Claude AI — ZS-AIGUARD</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@500;600;700;800&family=Hanken+Grotesk:ital,wght@0,400;0,500;0,600;1,400&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+<style>
+/* ── base tokens (light mode) ─────────────────────────────────────────── */
+:root{
+  --ink:#12161d;
+  --ink-2:#3b424f;
+  --ink-3:#6b7280;
+  --paper:#f5f4ef;
+  --card:#ffffff;
+  --line:#e4e2d9;
+  --line-2:#d3d0c4;
+  --accent:#1f5fe0;
+  --accent-deep:#143fa3;
+  --teal:#0f9c8f;
+  --signal:#b4530a;
+  --signal-bg:#fbf2e7;
+  --danger:#b3261e;
+  --danger-bg:#fbecea;
+  --radius:14px;
+  --shadow:0 1px 2px rgba(18,22,29,.05), 0 10px 30px -18px rgba(18,22,29,.28);
+  --mono:'JetBrains Mono',ui-monospace,Menlo,Consolas,monospace;
+  --sans:'Hanken Grotesk',system-ui,sans-serif;
+  --display:'Sora',var(--sans);
+}
+
+/* ── dark mode token overrides ───────────────────────────────────────── */
+body.dark{
+  --ink:#e8eef7;
+  --ink-2:#a8b8cc;
+  --ink-3:#58687a;
+  --paper:#0d1117;
+  --card:#161c2d;
+  --line:#212840;
+  --line-2:#2a3352;
+  --signal-bg:#1a140d;
+  --danger-bg:#1a0f0d;
+  --shadow:0 1px 2px rgba(0,0,0,.2), 0 10px 30px -18px rgba(0,0,0,.5);
+}
+body.dark{
+  background-image:radial-gradient(circle at 1px 1px,rgba(255,255,255,.04) 1px,transparent 0);
+}
+body.dark .quiz{background:var(--signal-bg);border-color:#3d2e1a}
+body.dark .q .answer{background:#0d1117}
+body.dark .box.verify{background:#0a1f1c}
+body.dark .box.warn{background:var(--danger-bg)}
+body.dark .box.mental{background:#141824;border-color:var(--line-2)}
+body.dark .code{background:#080c14}
+body.dark .config input,
+body.dark .scratch textarea,
+body.dark .q textarea{background:#0d1117;color:var(--ink);border-color:var(--line-2)}
+body.dark .config input:focus,
+body.dark .scratch textarea:focus,
+body.dark .q textarea:focus{background:var(--card)}
+
+/* ── reset + base ────────────────────────────────────────────────────── */
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  margin:0;font-family:var(--sans);color:var(--ink);background:var(--paper);
+  line-height:1.62;font-size:16.5px;-webkit-font-smoothing:antialiased;
+  background-image:radial-gradient(circle at 1px 1px,rgba(18,22,29,.045) 1px,transparent 0);
+  background-size:26px 26px;
+  transition:background .25s,color .25s;
+}
+.wrap{max-width:880px;margin:0 auto;padding:0 22px}
+
+/* ── dark mode toggle button ─────────────────────────────────────────── */
+.controls{position:fixed;top:14px;right:16px;z-index:55}
+.ctrl-btn{
+  font-family:var(--mono);font-size:13px;font-weight:600;
+  background:var(--card);color:var(--ink-2);border:1px solid var(--line);
+  border-radius:8px;padding:6px 11px;cursor:pointer;
+  box-shadow:var(--shadow);transition:.15s;
+}
+.ctrl-btn:hover{border-color:var(--accent);color:var(--accent)}
+
+/* ── reading progress bar ────────────────────────────────────────────── */
+#progress-bar{position:fixed;top:0;left:0;height:3px;width:0;background:var(--accent);z-index:60;transition:width .1s linear}
+
+/* ── breadcrumb ──────────────────────────────────────────────────────── */
+.crumbs{font-family:var(--mono);font-size:12px;letter-spacing:.04em;color:var(--ink-3);padding:22px 0 0}
+.crumbs a{color:var(--ink-2);text-decoration:none;border-bottom:1px dotted var(--line-2)}
+.crumbs a:hover{color:var(--accent)}
+.crumbs span{margin:0 7px;color:var(--line-2)}
+
+/* ── eyebrow ─────────────────────────────────────────────────────────── */
+.eyebrow{display:inline-flex;align-items:center;gap:9px;font-family:var(--mono);font-size:11.5px;
+  font-weight:600;letter-spacing:.16em;text-transform:uppercase;color:var(--accent);
+  background:#eaf0fd;border:1px solid #d3e0fb;padding:6px 12px;border-radius:999px;margin:26px 0 14px}
+.eyebrow::before{content:"";width:7px;height:7px;border-radius:50%;background:var(--accent)}
+body.dark .eyebrow{background:#0e1a3a;border-color:#1a3070}
+
+/* ── hero ────────────────────────────────────────────────────────────── */
+.hero-title{font-family:var(--display);font-weight:800;font-size:clamp(34px,6vw,56px);
+  line-height:1.02;letter-spacing:-.02em;margin:0 0 18px}
+.hero-title em{font-style:italic;font-weight:600;color:var(--accent)}
+.lede{font-size:18.5px;color:var(--ink-2);max-width:62ch;margin:0 0 30px}
+
+/* ── hero banner ─────────────────────────────────────────────────────── */
+.hero-banner{position:relative;border-radius:var(--radius);overflow:hidden;border:1px solid var(--line);
+  box-shadow:var(--shadow);aspect-ratio:16/6.2;margin:8px 0 6px;
+  background:linear-gradient(115deg,var(--ink) 0%,#1b2740 45%,var(--accent-deep) 100%)}
+.hero-banner img{width:100%;height:100%;object-fit:cover;display:block}
+.hero-banner .fallback{position:absolute;inset:0;display:flex;align-items:flex-end;padding:24px;color:#fff;
+  background:
+    radial-gradient(120% 140% at 85% 10%,rgba(31,95,224,.5),transparent 55%),
+    repeating-linear-gradient(135deg,rgba(255,255,255,.04) 0 2px,transparent 2px 22px)}
+.hero-banner .fallback b{font-family:var(--display);font-size:20px;font-weight:700;letter-spacing:-.01em}
+
+/* ── meta row ────────────────────────────────────────────────────────── */
+.meta{display:flex;flex-wrap:wrap;gap:10px;margin:22px 0}
+.meta .pill{display:flex;gap:7px;align-items:baseline;font-size:13.5px;background:var(--card);
+  border:1px solid var(--line);border-radius:10px;padding:8px 13px;transition:background .25s}
+.meta .pill b{font-family:var(--mono);font-size:11px;letter-spacing:.05em;text-transform:uppercase;color:var(--ink-3)}
+
+/* ── headings ────────────────────────────────────────────────────────── */
+h2.section{font-family:var(--display);font-weight:700;font-size:27px;letter-spacing:-.01em;
+  margin:46px 0 4px;padding-top:30px;border-top:1px solid var(--line)}
+h3{font-family:var(--display);font-weight:600;font-size:18px;margin:26px 0 8px}
+p{margin:0 0 14px}
+a{color:var(--accent)}
+
+/* ── callout boxes ───────────────────────────────────────────────────── */
+.box{border:1px solid var(--line);border-radius:var(--radius);padding:18px 20px;margin:20px 0;
+  background:var(--card);box-shadow:var(--shadow);transition:background .25s}
+.box .tag{font-family:var(--mono);font-size:11px;font-weight:600;letter-spacing:.12em;
+  text-transform:uppercase;display:inline-block;margin-bottom:8px}
+.box.scenario{border-left:4px solid var(--accent)} .box.scenario .tag{color:var(--accent)}
+.box.note{border-left:4px solid var(--teal)} .box.note .tag{color:var(--teal)}
+.box.verify{border-left:4px solid var(--teal);background:#f0faf8} .box.verify .tag{color:var(--teal)}
+.box.warn{border-left:4px solid var(--danger);background:var(--danger-bg)} .box.warn .tag{color:var(--danger)}
+.box.mental{border:1px dashed var(--line-2);background:#fbfaf6}
+body.dark .box.mental{background:#141824}
+.box p:last-child{margin-bottom:0}
+
+/* ── tokens ──────────────────────────────────────────────────────────── */
+.tok{font-family:var(--mono);font-size:.92em;background:#eef3fe;border:1px solid #d6e2fb;
+  border-radius:6px;padding:1px 7px;color:var(--accent-deep);white-space:nowrap}
+.tok:empty::before{content:"‹set in config›";color:var(--ink-3)}
+body.dark .tok{background:#0e1a3a;border-color:#1a3070;color:#7aadff}
+
+/* ── code ────────────────────────────────────────────────────────────── */
+code{font-family:var(--mono);font-size:.9em;background:#eeece5;border:1px solid var(--line);border-radius:5px;padding:1px 6px}
+body.dark code{background:#1a2035;border-color:var(--line-2)}
+.code{position:relative;font-family:var(--mono);font-size:13.5px;line-height:1.55;background:var(--ink);color:#e8eef7;
+  border-radius:10px;padding:15px 50px 15px 16px;margin:12px 0;white-space:pre-wrap;word-break:break-word}
+body.dark .code{background:#080c14}
+.code .copy-btn{position:absolute;top:9px;right:9px}
+
+/* ── copy button ─────────────────────────────────────────────────────── */
+.copy-btn{font-family:var(--mono);font-size:11px;font-weight:600;letter-spacing:.04em;cursor:pointer;
+  background:rgba(255,255,255,.1);color:#cdd7e6;border:1px solid rgba(255,255,255,.18);
+  border-radius:7px;padding:5px 9px;transition:.15s}
+.copy-btn:hover{background:rgba(255,255,255,.2);color:#fff}
+.copy-btn.light{background:var(--card);color:var(--ink-2);border:1px solid var(--line)}
+.copy-btn.light:hover{border-color:var(--accent);color:var(--accent)}
+.copy-btn.copied{background:var(--teal);color:#fff;border-color:var(--teal)}
+
+/* ── steps list ──────────────────────────────────────────────────────── */
+ol.steps{counter-reset:step;list-style:none;padding:0;margin:14px 0}
+ol.steps>li{position:relative;padding:2px 0 14px 40px;margin:0}
+ol.steps>li::before{counter-increment:step;content:counter(step);position:absolute;left:0;top:0;
+  width:27px;height:27px;border-radius:8px;background:var(--ink);color:#fff;font-family:var(--mono);
+  font-size:13px;font-weight:600;display:flex;align-items:center;justify-content:center}
+body.dark ol.steps>li::before{background:var(--accent-deep)}
+ol.steps ul{margin:8px 0 0;padding-left:18px}
+ol.steps ul li{margin:3px 0}
+
+/* ── collapsible tasks ───────────────────────────────────────────────── */
+details{border:1px solid var(--line);border-radius:var(--radius);margin:14px 0;
+  background:var(--card);overflow:hidden;box-shadow:var(--shadow);transition:background .25s}
+details>summary{cursor:pointer;list-style:none;padding:16px 20px;font-family:var(--display);font-weight:600;
+  font-size:16.5px;display:flex;align-items:center;gap:12px}
+details>summary::-webkit-details-marker{display:none}
+details>summary::after{content:"+";margin-left:auto;font-family:var(--mono);font-size:20px;color:var(--ink-3);transition:.2s}
+details[open]>summary::after{transform:rotate(45deg)}
+details>summary:hover{color:var(--accent)}
+details .body{padding:2px 20px 20px}
+.tasknum{font-family:var(--mono);font-size:11px;font-weight:600;letter-spacing:.1em;color:#fff;
+  background:var(--accent);border-radius:6px;padding:3px 8px}
+
+/* ── think-first quiz ────────────────────────────────────────────────── */
+.quiz{border:1px solid #ecd9c2;background:var(--signal-bg);border-radius:var(--radius);padding:20px;margin:24px 0;transition:background .25s}
+body.dark .quiz{border-color:#3d2e1a}
+.quiz>.tag{font-family:var(--mono);font-size:11.5px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--signal);display:flex;align-items:center;gap:8px;margin-bottom:6px}
+.quiz>.tag::before{content:"💭"}
+.q{margin:16px 0;padding-top:16px;border-top:1px solid #ecd9c2}
+body.dark .q{border-top-color:#3d2e1a}
+.q:first-of-type{border-top:none;padding-top:4px}
+.q .qtext{font-weight:500;margin-bottom:10px}
+.q textarea{width:100%;min-height:62px;font-family:var(--sans);font-size:14.5px;border:1px solid var(--line-2);
+  border-radius:9px;padding:9px 12px;resize:vertical;background:#fff;color:var(--ink);transition:background .25s}
+.q textarea:focus{outline:none;border-color:var(--signal)}
+.q .answer{margin-top:10px;border:1px solid #ecd9c2;border-radius:9px;background:#fff;transition:background .25s}
+body.dark .q .answer{background:#0d1117;border-color:#3d2e1a}
+.q .answer summary{padding:11px 14px;font-family:var(--mono);font-size:12px;font-weight:600;
+  letter-spacing:.05em;color:var(--signal);box-shadow:none}
+.q .answer summary::after{content:"▾"}
+.q .answer[open] summary::after{content:"▴"}
+.q .answer .body{padding:0 14px 14px;font-size:14.5px;color:var(--ink-2)}
+
+/* ── scratch pads ────────────────────────────────────────────────────── */
+.scratch{display:grid;gap:14px;grid-template-columns:1fr 1fr;margin:16px 0}
+@media(max-width:640px){.scratch{grid-template-columns:1fr}}
+.scratch .pad{border:1px solid var(--line);border-radius:12px;background:var(--card);padding:13px;transition:background .25s}
+.scratch .pad .hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+.scratch .pad .hd b{font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-3)}
+.scratch textarea{width:100%;min-height:80px;border:1px solid var(--line);border-radius:9px;padding:9px 11px;
+  font-family:var(--sans);font-size:14px;resize:vertical;background:#fbfaf6;color:var(--ink);transition:background .25s}
+.scratch textarea:focus{outline:none;border-color:var(--accent);background:#fff}
+body.dark .scratch textarea{background:var(--paper)}
+body.dark .scratch textarea:focus{background:var(--card)}
+
+/* ── config panel ────────────────────────────────────────────────────── */
+.config{border:1px solid var(--line);border-radius:var(--radius);background:var(--card);
+  box-shadow:var(--shadow);margin:22px 0;transition:background .25s}
+.config summary{padding:15px 20px;font-family:var(--display);font-weight:600;display:flex;align-items:center;gap:10px}
+.config summary::before{content:"⚙";font-size:18px}
+.config .body{display:flex;flex-wrap:wrap;gap:14px;align-items:flex-end;padding:2px 20px 20px}
+.config .field{display:flex;flex-direction:column;gap:5px}
+.config label{font-family:var(--mono);font-size:11px;letter-spacing:.05em;text-transform:uppercase;color:var(--ink-3)}
+.config input{font-family:var(--mono);font-size:14px;border:1px solid var(--line-2);border-radius:8px;
+  padding:8px 11px;min-width:200px;background:#fbfaf6;color:var(--ink);transition:background .25s}
+.config input:focus{outline:none;border-color:var(--accent);background:#fff}
+body.dark .config input{background:var(--paper);border-color:var(--line-2)}
+body.dark .config input:focus{background:var(--card)}
+.btn{font-family:var(--display);font-weight:600;font-size:14px;cursor:pointer;border-radius:9px;padding:9px 16px;border:1px solid transparent}
+.btn.primary{background:var(--accent);color:#fff}
+.btn.primary:hover{background:var(--accent-deep)}
+.btn.ghost{background:transparent;color:var(--ink-2);border-color:var(--line-2)}
+.btn.ghost:hover{border-color:var(--ink-2)}
+
+/* ── progress checklist ──────────────────────────────────────────────── */
+.progress-wrap{border:1px solid var(--line);border-radius:var(--radius);background:var(--card);
+  box-shadow:var(--shadow);padding:20px;margin:30px 0;transition:background .25s}
+.progress-wrap .hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.progress-wrap .hd b{font-family:var(--mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-3)}
+.progress-wrap .count{font-family:var(--display);font-weight:700;font-size:15px;color:var(--accent)}
+.bar{height:8px;border-radius:99px;background:var(--line);overflow:hidden;margin-bottom:16px}
+.bar>span{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--accent),var(--teal));transition:width .35s ease}
+.check{display:flex;gap:11px;align-items:flex-start;padding:7px 0;border-top:1px dashed var(--line)}
+.check:first-of-type{border-top:none}
+.check input{margin-top:4px;width:17px;height:17px;accent-color:var(--accent);cursor:pointer}
+.check label{cursor:pointer;font-size:14.5px}
+.check input:checked + label{color:var(--ink-3);text-decoration:line-through}
+
+/* ── quick reference table ───────────────────────────────────────────── */
+table.qref{width:100%;border-collapse:collapse;font-size:14px}
+table.qref tr{border-top:1px solid var(--line)}
+table.qref tr:first-child{border-top:none}
+table.qref td{padding:11px 6px;vertical-align:top}
+table.qref td:first-child{font-family:var(--display);font-weight:600;width:38%;color:var(--ink)}
+table.qref td:last-child{color:var(--ink-2)}
+
+/* ── footer ──────────────────────────────────────────────────────────── */
+.foot{margin:50px 0 40px;padding-top:26px;border-top:1px solid var(--line)}
+.labnav{display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap;margin:18px 0}
+.labnav a{flex:1;min-width:220px;text-decoration:none;border:1px solid var(--line);border-radius:12px;
+  padding:14px 16px;background:var(--card);transition:.15s}
+.labnav a:hover{border-color:var(--accent)}
+.labnav .dir{font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-3)}
+.labnav .ttl{font-family:var(--display);font-weight:600;color:var(--ink);display:block;margin-top:2px}
+.labnav a.next{text-align:right}
+.tagline{text-align:center;font-style:italic;color:var(--ink-3);margin:26px 0 0;font-size:15px}
+.courseline{text-align:center;font-family:var(--mono);font-size:11.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-3);margin-top:18px}
+
+/* ── animation ───────────────────────────────────────────────────────── */
+.reveal{opacity:0;transform:translateY(14px);animation:rise .6s cubic-bezier(.2,.7,.3,1) forwards}
+@keyframes rise{to{opacity:1;transform:none}}
+
+/* ── toast ───────────────────────────────────────────────────────────── */
+.toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--ink);
+  color:#fff;font-size:13px;padding:10px 18px;border-radius:99px;opacity:0;pointer-events:none;transition:.25s;z-index:80}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+</style>
+</head>
+<body>
+<div id="progress-bar"></div>
+
+<!-- ── dark mode toggle ──────────────────────────────────────────────── -->
+<div class="controls">
+  <button class="ctrl-btn" id="dark-btn" onclick="toggleDark()" title="Toggle dark mode">🌙</button>
+</div>
+
+<div class="wrap">
+
+  <nav class="crumbs">
+    <a href="index.html">Course Labs</a><span>›</span>
+    <a href="index.html">ZS-AIGUARD</a><span>›</span>
+    Lab 1
+  </nav>
+
+  <span class="eyebrow">Lab 1 · Zscaler MCP</span>
+  <h1 class="hero-title">Zscaler MCP <em>+ Claude AI</em></h1>
+  <p class="lede">
+    From credentials to natural-language Zscaler operations in 45 minutes —
+    no JSON, no pagination, no portal clicking. Just prompts.
+  </p>
+
+  <!-- Lab Configuration -->
+  <details class="config" open>
+    <summary>Lab Configuration</summary>
+    <div class="body">
+      <div class="field"><label>Vanity Domain (FQDN)</label><input id="cfg-fqdn" placeholder="zs000abc.zslogin.net"></div>
+      <div class="field"><label>Session Password</label><input id="cfg-password" placeholder="••••••"></div>
+      <div class="field"><label>Student / Customer ID</label><input id="cfg-studentid" placeholder="000312"></div>
+      <button class="btn primary" onclick="saveConfig()">Save</button>
+      <button class="btn ghost" onclick="clearConfig()">Clear</button>
+    </div>
+  </details>
+
+  <div class="hero-banner reveal">
+    <img src="images/lab1-hero.png" alt="Zscaler MCP + Claude AI architecture diagram"
+         onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+    <div class="fallback" style="display:none"><b>Lab 1 — Zscaler MCP + Claude AI</b></div>
+  </div>
+
+  <div class="box scenario reveal">
+    <span class="tag">Scenario</span>
+    <p>You are a senior platform engineer responsible for your organisation's Zscaler ZIA and ZPA estate.
+       Today you're evaluating whether natural-language AI operations can replace repetitive portal work —
+       inventory queries, cross-cutting investigations, and audit reports that currently take dozens of clicks.</p>
+    <p>You'll connect Claude Desktop to the Zscaler MCP server using your lab tenant at
+       <code><span class="tok" data-tok="fqdn"></span></code>,
+       then drive real read operations through eight prompts spanning inventory, investigation, and reporting.
+       An optional final task walks a guarded write with explicit HMAC confirmation.
+       Log in using Student ID <span class="tok" data-tok="studentid"></span> and
+       session password <span class="tok" data-tok="password"></span>.</p>
+  </div>
+
+  <div class="meta">
+    <span class="pill"><b>Time</b> ~45 min</span>
+    <span class="pill"><b>Services</b> ZIA + ZPA</span>
+    <span class="pill"><b>Prerequisite</b> OneAPI enabled · Claude Desktop installed</span>
+    <span class="pill"><b>Audience</b> Security engineers · DevSecOps · Platform admins</span>
+  </div>
+
+  <div class="box warn reveal">
+    <span class="tag">⚠️ Safety — read first</span>
+    <p>Use a <strong>sandbox or lab tenant only</strong>. Do not point this at a production Zscaler environment.
+       The extension is read-only by default — keep that default until the optional write task.
+       Your OneAPI credentials are sensitive; treat them like any production secret.
+       If your organisation restricts AI tools from touching config, clear this with your security team first.</p>
+  </div>
+
+  <!-- ── THINK FIRST ──────────────────────────────────────────────────── -->
+  <div class="quiz reveal">
+    <span class="tag">Think First · MCP &amp; Security Model</span>
+
+    <div class="q">
+      <div class="qtext">What is the Model Context Protocol (MCP) and how does it let Claude Desktop call Zscaler APIs — without you writing any API or integration code?</div>
+      <textarea data-note="q1-answer" placeholder="Your answer…"></textarea>
+      <details class="answer">
+        <summary>See Model Answer</summary>
+        <div class="body">
+          <p>MCP (Model Context Protocol) is an open standard that lets AI models discover and invoke external "tools" at runtime. The Zscaler MCP server exposes Zscaler API calls as named tools (e.g., <code>zpa_application_segment_list</code>, <code>zia_url_filtering_list</code>). Claude Desktop loads the server, reads the tool catalogue, and when you submit a prompt, Claude decides which tool(s) to call, executes them through the MCP channel, and weaves the results into its response. You write no integration code — the MCP server handles authentication, pagination, and API formatting; you just prompt in plain English.</p>
+        </div>
+      </details>
+    </div>
+
+    <div class="q">
+      <div class="qtext">After you paste your OneAPI credentials into the extension's GUI and click Save, where are they stored — and why does this matter compared to a <code>.env</code> file or <code>claude_desktop_config.json</code>?</div>
+      <textarea data-note="q2-answer" placeholder="Your answer…"></textarea>
+      <details class="answer">
+        <summary>See Model Answer</summary>
+        <div class="body">
+          <p>The extension stores credentials in your <strong>OS keychain</strong> — macOS Keychain Access, Linux Secret Service, or Windows Credential Manager. This matters because: (1) the keychain encrypts secrets at rest using OS-level protection tied to your user account; (2) credentials are never written to a plaintext file that could be accidentally committed to a repo or read by another process; (3) the extension retrieves them at runtime without exposing them in environment variables that child processes can inherit. A <code>.env</code> file or JSON config is just plaintext on disk — none of these protections apply.</p>
+        </div>
+      </details>
+    </div>
+
+    <div class="q">
+      <div class="qtext">The extension is read-only by default. What additional mechanism protects write operations when you opt into them, and at exactly what point does explicit human accountability enter the loop?</div>
+      <textarea data-note="q3-answer" placeholder="Your answer…"></textarea>
+      <details class="answer">
+        <summary>See Model Answer</summary>
+        <div class="body">
+          <p>When write tools are enabled, the extension surfaces an <strong>HMAC confirmation prompt</strong> before any change is applied. This shows the exact proposed payload — tool name, target object, and every field being set — and requires your explicit approval. Human accountability enters the loop at this step: you see Claude's intent as a structured payload (not a natural-language description), and you approve or reject before anything changes in Zscaler. Rejecting requires no further action; approving is the authorisation record.</p>
+        </div>
+      </details>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════════════════ -->
+  <h2 class="section">Task 1 — Install the Zscaler Extension in Claude Desktop</h2>
+  <p style="color:var(--ink-2);margin-top:6px">~10 min · No terminal, no config files — GUI only.</p>
+
+  <details open>
+    <summary><span class="tasknum">Task 1.1</span> Open the Extensions directory</summary>
+    <div class="body">
+      <p>Anthropic and Zscaler ship the Zscaler MCP Server as a one-click Claude Desktop extension.
+         No Docker, no terminal, no config files — just a few clicks and a credential prompt.</p>
+      <ol class="steps">
+        <li>Launch <b>Claude Desktop</b>.</li>
+        <li>Open <b>Settings → Connectors → Customize</b>.</li>
+        <li>Click <b>Plus (+) icon → Browse Connectors</b> to open the official directory.</li>
+        <li>Search for <b>Zscaler</b> and select <b>Zscaler MCP Server</b>.</li>
+        <li>Click <b>Install</b>. Claude Desktop downloads the bundle and opens the configuration screen automatically.</li>
+      </ol>
+      <div class="box note"><span class="tag">Note</span>
+        <p><b>Windows users:</b> the one-click bundle contains packages built for macOS/Linux. On Windows, use the manual config path in the Quick Reference table, then rejoin at Task 1.2.</p>
+      </div>
+      <div class="scratch">
+        <div class="pad"><div class="hd"><b>My Questions</b><button class="copy-btn light" onclick="copyPad(this)">Copy</button></div>
+          <textarea data-note="t1.1-q" placeholder="Anything you want to ask the instructor…"></textarea></div>
+        <div class="pad"><div class="hd"><b>My Notes</b><button class="copy-btn light" onclick="copyPad(this)">Copy</button></div>
+          <textarea data-note="t1.1-n" placeholder="Your notes…"></textarea></div>
+      </div>
+    </div>
+  </details>
+
+  <details>
+    <summary><span class="tasknum">Task 1.2</span> Enter your OneAPI credentials</summary>
+    <div class="body">
+      <p>The extension's configuration screen asks for four values. Paste each from the credentials you captured in the pre-lab setup. They are stored in your OS keychain — not a plaintext file.</p>
+      <h3>Capture these four values first</h3>
+      <p>Find them in <b>Z Identity → Administration → API Key Management → OneAPI Credentials</b>:</p>
+      <div class="scratch" style="margin:14px 0">
+        <div class="pad"><div class="hd"><b>Client ID</b><button class="copy-btn light" onclick="copyPad(this)">Copy</button></div>
+          <textarea data-note="cred-clientid" placeholder="ZSCALER_CLIENT_ID"></textarea></div>
+        <div class="pad"><div class="hd"><b>Customer ID</b><button class="copy-btn light" onclick="copyPad(this)">Copy</button></div>
+          <textarea data-note="cred-customerid" placeholder="ZSCALER_CUSTOMER_ID"></textarea></div>
+      </div>
+      <ol class="steps">
+        <li>In the extension config screen, fill in:
+          <ul>
+            <li><b>Client ID:</b> <code>ZSCALER_CLIENT_ID</code></li>
+            <li><b>Client Secret:</b> <code>ZSCALER_CLIENT_SECRET</code></li>
+            <li><b>Customer ID:</b> <code>ZSCALER_CUSTOMER_ID</code> — <span class="tok" data-tok="studentid"></span></li>
+            <li><b>Vanity Domain:</b> <code>ZSCALER_VANITY_DOMAIN</code> — <span class="tok" data-tok="fqdn"></span></li>
+          </ul>
+        </li>
+        <li>Click <b>Save</b>. Claude Desktop writes the values to your OS keychain.</li>
+      </ol>
+      <div class="box warn"><span class="tag">⚠️ Warning</span>
+        <p>If any of the four fields are missing or incorrect, the extension will not authenticate. Stop and resolve with your Zscaler admin before proceeding.</p>
+      </div>
+      <div class="scratch">
+        <div class="pad"><div class="hd"><b>My Questions</b><button class="copy-btn light" onclick="copyPad(this)">Copy</button></div>
+          <textarea data-note="t1.2-q" placeholder="Anything you want to ask the instructor…"></textarea></div>
+        <div class="pad"><div class="hd"><b>My Notes</b><button class="copy-btn light" onclick="copyPad(this)">Copy</button></div>
+          <textarea data-note="t1.2-n" placeholder="Your notes…"></textarea></div>
+      </div>
+    </div>
+  </details>
+
+  <details>
+    <summary><span class="tasknum">Task 1.3</span> Scope the tools (recommended)</summary>
+    <div class="body">
+      <p>The configuration screen lets you choose which services and toolsets the extension exposes.
+         Start narrow — you can broaden later. Scoping keeps Claude's context lean and reduces the chance of the wrong tool being chosen.</p>
+      <ol class="steps">
+        <li>In the extension config, set:
+          <ul>
+            <li><b>Services:</b> <div class="code">zia, zpa<button class="copy-btn" onclick="copyCode(this)">Copy</button></div></li>
+            <li><b>Toolsets:</b> <div class="code">zia_url_filtering, zpa_app_segments, zia_url_categories<button class="copy-btn" onclick="copyCode(this)">Copy</button></div></li>
+          </ul>
+        </li>
+        <li>Save. Leave <b>Enable write tools</b> set to <b>OFF</b> — you'll enable a narrow allowlist in Task 3 if you run the optional write task.</li>
+      </ol>
+      <div class="box note"><span class="tag">Note</span>
+        <p>Scoping is both a performance <em>and</em> a safety improvement. Without it, Claude must reason over hundreds of tools across all Zscaler services, slowing tool selection and increasing the risk of choosing the wrong one.</p>
+      </div>
+      <div class="scratch">
+        <div class="pad"><div class="hd"><b>My Questions</b><button class="copy-btn light" onclick="copyPad(this)">Copy</button></div>
+          <textarea data-note="t1.3-q" placeholder="Anything you want to ask the instructor…"></textarea></div>
+        <div class="pad"><div class="hd"><b>My Notes</b><button class="copy-btn light" onclick="copyPad(this)">Copy</button></div>
+          <textarea data-note="t1.3-n" placeholder="Your notes…"></textarea></div>
+      </div>
+    </div>
+  </details>
+
+  <details>
+    <summary><span class="tasknum">Task 1.4</span> Verify Claude sees the tools</summary>
+    <div class="body">
+      <p>Start a new conversation in Claude Desktop and run the verification prompt:</p>
+      <div class="code">List the Zscaler tools you have access to, grouped by ZIA vs ZPA.<button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <div class="box verify"><span class="tag">Verify</span>
+        <p>Claude should list tool names like <code>zia_url_filtering_list</code>, <code>zpa_application_segment_list</code>, etc., grouped by service.
+           If Claude says it has no Zscaler tools: fully quit and reopen Claude Desktop, then check
+           <b>Settings → Connectors</b> to confirm the Zscaler MCP connector is <b>enabled</b>.</p>
+      </div>
+      <div class="scratch">
+        <div class="pad"><div class="hd"><b>My Questions</b><button class="copy-btn light" onclick="copyPad(this)">Copy</button></div>
+          <textarea data-note="t1.4-q" placeholder="Anything you want to ask the instructor…"></textarea></div>
+        <div class="pad"><div class="hd"><b>My Notes</b><button class="copy-btn light" onclick="copyPad(this)">Copy</button></div>
+          <textarea data-note="t1.4-n" placeholder="Your notes…"></textarea></div>
+      </div>
+    </div>
+  </details>
+
+  <!-- ══════════════════════════════════════════════════════════════════ -->
+  <h2 class="section">Task 2 — Operations Made Easy with Prompts</h2>
+  <p style="color:var(--ink-2);margin-top:6px">~20 min · Eight prompts across three categories. Read results critically — you are the reviewer.</p>
+
+  <details open>
+    <summary><span class="tasknum">Task 2A</span> Inventory — what do we have?</summary>
+    <div class="body">
+      <p>Run these three prompts in sequence. Notice you write no JSON, paginate nothing, and stitch no responses — Claude does that. Your job is to read the output critically.</p>
+      <h3>Prompt 1 — ZPA application segments</h3>
+      <div class="code">Using the Zscaler tools, list the first 10 ZPA application segments in our tenant. Show name, segment ID, and domain names. Format as a table.<button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <p style="color:var(--ink-2);font-size:14px">Expected: Claude calls <code>zpa_application_segment_list</code>, parses the response, and returns a clean table — the first "aha" moment vs portal clicking.</p>
+
+      <h3>Prompt 2 — ZIA URL filtering rules</h3>
+      <div class="code">How many ZIA URL filtering rules do we have in total? Group the count by action (block / allow / caution), and tell me which rules are currently disabled.<button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <p style="color:var(--ink-2);font-size:14px">Expected: A summary table plus a list of disabled rules — what would otherwise require opening every rule individually.</p>
+
+      <h3>Prompt 3 — URL categories filtered by keyword</h3>
+      <div class="code">List ZIA URL categories whose name contains 'AI', 'social', or 'media'. For each, show the category name, type (predefined vs custom), and approximate URL count.<button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <p style="color:var(--ink-2);font-size:14px">Expected: A focused list. Tests Claude's ability to filter at query time instead of dumping everything.</p>
+
+      <div class="scratch">
+        <div class="pad"><div class="hd"><b>My Questions</b><button class="copy-btn light" onclick="copyPad(this)">Copy</button></div>
+          <textarea data-note="t2a-q" placeholder="Anything you want to ask the instructor…"></textarea></div>
+        <div class="pad"><div class="hd"><b>My Notes</b><button class="copy-btn light" onclick="copyPad(this)">Copy</button></div>
+          <textarea data-note="t2a-n" placeholder="Your notes…"></textarea></div>
+      </div>
+    </div>
+  </details>
+
+  <details>
+    <summary><span class="tasknum">Task 2B</span> Investigation — what's actually happening?</summary>
+    <div class="body">
+      <p>Cross-cutting questions that are painful in the portal — multiple clicks per rule to see scoping and group attribution.</p>
+      <h3>Prompt 4 — Social media rules &amp; user groups</h3>
+      <div class="code">Find any ZIA URL filtering rules that mention 'social' in the rule name or description. For each, tell me which user groups the rule applies to and whether it's currently enabled.<button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <p style="color:var(--ink-2);font-size:14px">Expected: A short list with user-group attribution. The equivalent in the ZIA portal is roughly 4–8 clicks per rule.</p>
+
+      <h3>Prompt 5 — ZPA segments open to ANY user group</h3>
+      <div class="code">List ZPA application segments whose access policy allows ANY user group. Flag those for review and tell me which ones are enabled in production.<button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <p style="color:var(--ink-2);font-size:14px">Expected: A flagged list — useful as a one-prompt periodic access audit.</p>
+
+      <h3>Prompt 6 — Compare user group policies</h3>
+      <div class="code">Summarize the difference between our 'Students' and 'Admin' user-group policies in ZIA. What can one reach that the other can't? Where do they overlap?<button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <p style="color:var(--ink-2);font-size:14px">Expected: A comparison Claude assembles by inspecting both groups' policy memberships — where the AI layer earns its keep.</p>
+
+      <div class="scratch">
+        <div class="pad"><div class="hd"><b>My Questions</b><button class="copy-btn light" onclick="copyPad(this)">Copy</button></div>
+          <textarea data-note="t2b-q" placeholder="Anything you want to ask the instructor…"></textarea></div>
+        <div class="pad"><div class="hd"><b>My Notes</b><button class="copy-btn light" onclick="copyPad(this)">Copy</button></div>
+          <textarea data-note="t2b-n" placeholder="Your notes…"></textarea></div>
+      </div>
+    </div>
+  </details>
+
+  <details>
+    <summary><span class="tasknum">Task 2C</span> Comparison &amp; Reporting — what should we do?</summary>
+    <div class="body">
+      <p>Where prompt-driven ops starts replacing documentation drudgery, not just clicks.</p>
+      <h3>Prompt 7 — Compare ZPA application segments</h3>
+      <div class="code">Compare our two largest ZPA application segments by number of domains. Which would be a better candidate to break into smaller segments, and why? Show your reasoning.<button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <p style="color:var(--ink-2);font-size:14px">Expected: A recommendation with supporting numbers. Note: Claude's recommendation is its opinion — <strong>your job is to evaluate it, not blindly act on it</strong>.</p>
+
+      <h3>Prompt 8 — Audit summary for change control</h3>
+      <div class="code">Generate a markdown audit summary of our current ZIA URL filtering policy. Group rules by action, show counts per group, and list any disabled rules. I want to paste this into a change-control ticket.<button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <p style="color:var(--ink-2);font-size:14px">Expected: Properly formatted markdown ready to paste into a change-control ticket, weekly report, or compliance review.</p>
+
+      <div class="box verify"><span class="tag">Verify</span>
+        <p>All eight prompts returned <strong>real data</strong> from your tenant. If any returned generic guidance ("here's how you would do this…"), the tool likely wasn't called. Re-prompt with <em>"Please use the Zscaler tools to answer this."</em> prepended.</p>
+      </div>
+      <div class="scratch">
+        <div class="pad"><div class="hd"><b>My Questions</b><button class="copy-btn light" onclick="copyPad(this)">Copy</button></div>
+          <textarea data-note="t2c-q" placeholder="Anything you want to ask the instructor…"></textarea></div>
+        <div class="pad"><div class="hd"><b>My Notes</b><button class="copy-btn light" onclick="copyPad(this)">Copy</button></div>
+          <textarea data-note="t2c-n" placeholder="Your notes…"></textarea></div>
+      </div>
+    </div>
+  </details>
+
+  <!-- ══════════════════════════════════════════════════════════════════ -->
+  <h2 class="section">Task 3 (Optional) — One Guarded Write</h2>
+  <p style="color:var(--ink-2);margin-top:6px">~10 min · Sandbox tenant only. Creates and deletes a test resource.</p>
+
+  <details>
+    <summary><span class="tasknum">Task 3.1</span> Enable a narrow write tool</summary>
+    <div class="body">
+      <div class="box warn"><span class="tag">⚠️ Sandbox only</span>
+        <p>This task creates and then deletes a real config object. The artifact is namespaced with <code>LAB-</code> to be obvious, but you are still making a real change. Do <strong>not</strong> run this on a tenant that serves real users.</p>
+      </div>
+      <ol class="steps">
+        <li>Open <b>Settings → Extensions → Zscaler MCP Server</b>.</li>
+        <li>Toggle on <b>Enable write tools</b> and set the allowlist to:
+          <div class="code">zia_url_categories_create, zia_url_categories_delete<button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+        </li>
+        <li>Save, then <strong>fully quit and reopen Claude Desktop</strong> so the extension reloads with the new permissions.</li>
+      </ol>
+    </div>
+  </details>
+
+  <details>
+    <summary><span class="tasknum">Task 3.2</span> Create the test category</summary>
+    <div class="body">
+      <ol class="steps">
+        <li>In a new Claude Desktop conversation, enter:
+          <div class="code">Create a new custom ZIA URL category called LAB-TEST-DELETE-ME containing exactly one URL: example.com.au. Show me what you intend to do and pause for confirmation before applying.<button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+        </li>
+        <li>Claude will propose the tool call, surface the <strong>HMAC confirmation prompt</strong>, and wait for your approval.</li>
+        <li>Read the proposed payload carefully. Approve <em>only</em> after confirming it matches your intent exactly.</li>
+      </ol>
+      <div class="box note"><span class="tag">Note</span>
+        <p>The HMAC confirmation shows the exact payload — tool name, target object, every field being set. This is the most important security control in the pipeline. If the payload looks wrong, <strong>reject it</strong> and re-prompt with tighter constraints.</p>
+      </div>
+    </div>
+  </details>
+
+  <details>
+    <summary><span class="tasknum">Task 3.3</span> Verify and clean up</summary>
+    <div class="body">
+      <ol class="steps">
+        <li>Verify the category was created:
+          <div class="code">List custom ZIA URL categories and find LAB-TEST-DELETE-ME. Confirm it exists and show its contents.<button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+        </li>
+        <li>Then delete it:
+          <div class="code">Delete the custom URL category LAB-TEST-DELETE-ME. Confirm before deleting.<button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+        </li>
+        <li>Approve the second HMAC confirmation, then re-run the list prompt to confirm the category is gone.</li>
+      </ol>
+      <div class="box verify"><span class="tag">Verify</span>
+        <p>You completed two HMAC confirmations (create + delete). <code>LAB-TEST-DELETE-ME</code> existed between them and is gone after the second approval.</p>
+      </div>
+      <div class="scratch">
+        <div class="pad"><div class="hd"><b>My Questions</b><button class="copy-btn light" onclick="copyPad(this)">Copy</button></div>
+          <textarea data-note="t3-q" placeholder="Anything you want to ask the instructor…"></textarea></div>
+        <div class="pad"><div class="hd"><b>My Notes</b><button class="copy-btn light" onclick="copyPad(this)">Copy</button></div>
+          <textarea data-note="t3-n" placeholder="Your notes…"></textarea></div>
+      </div>
+    </div>
+  </details>
+
+  <div class="box mental reveal">
+    <span class="tag">🧠 Mental Note</span>
+    <p><strong>MCP = natural language → real API calls, with no glue code from you.</strong> Install the extension, paste four credentials, scope to two services, and Claude becomes an interactive interface to your entire ZIA/ZPA estate. Keep it read-only for day-to-day ops. When you need a write, use a narrow allowlist and treat every HMAC confirmation as your last human checkpoint before a change goes live.</p>
+  </div>
+
+  <!-- progress checklist -->
+  <div class="progress-wrap reveal">
+    <div class="hd"><b>Lab 1 Progress</b><span class="count" id="prog-count">0 / 0</span></div>
+    <div class="bar"><span id="prog-fill"></span></div>
+    <div class="check"><input type="checkbox" id="c1"><label for="c1">Captured all four OneAPI credential values from Z Identity (Client ID, Client Secret, Customer ID, Vanity Domain)</label></div>
+    <div class="check"><input type="checkbox" id="c2"><label for="c2">Installed the Zscaler MCP Server extension in Claude Desktop via the Connectors directory</label></div>
+    <div class="check"><input type="checkbox" id="c3"><label for="c3">Entered credentials and saved (OS keychain — not a plaintext file)</label></div>
+    <div class="check"><input type="checkbox" id="c4"><label for="c4">Scoped services to <code>zia, zpa</code> and toolsets to the three specified toolsets</label></div>
+    <div class="check"><input type="checkbox" id="c5"><label for="c5">Verified Claude lists Zscaler tools correctly (Task 1.4 check passed)</label></div>
+    <div class="check"><input type="checkbox" id="c6"><label for="c6">Completed all 8 prompts in Task 2 — all returned real tenant data, not generic guidance</label></div>
+    <div class="check"><input type="checkbox" id="c7"><label for="c7">(Optional) Completed the guarded write: created LAB-TEST-DELETE-ME via HMAC and deleted it via a second HMAC confirmation</label></div>
+  </div>
+
+  <!-- quick reference -->
+  <details>
+    <summary>Quick Reference</summary>
+    <div class="body">
+      <table class="qref">
+        <tr><td>Z Identity credentials path</td><td>Z Identity → Administration → API Key Management → OneAPI Credentials</td></tr>
+        <tr><td>ZIA API roles</td><td>ZIA → Administration → Role Management → sync to Z Identity → API Resources</td></tr>
+        <tr><td>ZPA API roles</td><td>ZPA → Role Management → sync to Z Identity → API Resources</td></tr>
+        <tr><td>Vanity domain (your tenant)</td><td><span class="tok" data-tok="fqdn"></span></td></tr>
+        <tr><td>Customer / Student ID</td><td><span class="tok" data-tok="studentid"></span></td></tr>
+        <tr><td>Claude Desktop extensions</td><td>Settings → Connectors → Browse Connectors → search "Zscaler"</td></tr>
+        <tr><td>Extension config</td><td>Settings → Extensions → Zscaler MCP Server</td></tr>
+        <tr><td>Services scope (this lab)</td><td><code>zia, zpa</code></td></tr>
+        <tr><td>Toolsets scope (this lab)</td><td><code>zia_url_filtering, zpa_app_segments, zia_url_categories</code></td></tr>
+        <tr><td>Write allowlist (Task 3 only)</td><td><code>zia_url_categories_create, zia_url_categories_delete</code></td></tr>
+        <tr><td>Tool not called — fix</td><td>Prepend: <em>"Please use the Zscaler tools to answer this."</em></td></tr>
+        <tr><td>MCP server repo</td><td><code>github.com/zscaler/zscaler-mcp-server</code></td></tr>
+        <tr><td>Windows manual config</td><td>Settings → Developer → Edit Config → add <code>mcpServers.zscaler-mcp-server</code> block with <code>uvx</code> + <code>--env-file</code></td></tr>
+        <tr><td>No tools visible</td><td>Fully quit and reopen Claude Desktop; confirm extension enabled in Settings → Connectors</td></tr>
+        <tr><td>403 errors</td><td>API role not assigned to the OneAPI credential in Z Identity</td></tr>
+      </table>
+    </div>
+  </details>
+
+  <!-- troubleshooting -->
+  <details>
+    <summary>Appendix — Troubleshooting</summary>
+    <div class="body">
+      <table class="qref">
+        <tr><td>Extension installs but "no Zscaler tools"</td><td>Claude Desktop not fully restarted, or extension disabled. Quit and reopen entirely; check Settings → Extensions.</td></tr>
+        <tr><td>Config screen rejects credentials</td><td>Wrong values, or OneAPI not enabled. Re-check four values in Z Identity; confirm with Zscaler account team.</td></tr>
+        <tr><td>Tools listed but calls return <code>403</code></td><td>Credential lacks required API role. Create/sync a role in the relevant product, link to the OneAPI credential in Z Identity.</td></tr>
+        <tr><td>Write prompt runs but no HMAC confirm appears</td><td>Write tool not in allowlist, or write toggle is off. Reopen extension config and confirm both settings.</td></tr>
+        <tr><td>HMAC confirm shows wrong payload</td><td><strong>Reject the confirmation.</strong> Re-prompt with explicit constraints. Never approve a payload you didn't intend.</td></tr>
+      </table>
+    </div>
+  </details>
+
+  <div class="foot">
+    <div class="labnav">
+      <a class="prev" href="#" style="visibility:hidden"><span class="dir">←</span><span class="ttl">—</span></a>
+      <a class="next" href="lab2.html">
+        <span class="dir">Next →</span>
+        <span class="ttl">Lab 2: AI Guard Proxy Mode</span>
+      </a>
+    </div>
+    <p class="tagline">Prompt instead of click — and let the tools do the work.</p>
+    <p class="courseline">ZS-AIGUARD · Zscaler AI Guard &amp; MCP Deep Dive · © 2026 Adonis Li</p>
+  </div>
+
+</div><!-- /wrap -->
+<div class="toast" id="toast"></div>
+
+<script>
+/* ── storage ──────────────────────────────────────────────────────────── */
+const KEY='lab1-mcp-v1';
+function load(){try{return JSON.parse(localStorage.getItem(KEY))||{}}catch(e){return{}}}
+function save(o){try{localStorage.setItem(KEY,JSON.stringify(o))}catch(e){}}
+let store=load();
+store.cfg=store.cfg||{}; store.notes=store.notes||{}; store.checks=store.checks||{}; store.dark=store.dark||'';
+
+/* ── toast ────────────────────────────────────────────────────────────── */
+let tT;
+function toast(m){const t=document.getElementById('toast');t.textContent=m;t.classList.add('show');clearTimeout(tT);tT=setTimeout(()=>t.classList.remove('show'),1600)}
+
+/* ── dark mode ────────────────────────────────────────────────────────── */
+function applyDark(on){
+  document.body.classList.toggle('dark',on);
+  const btn=document.getElementById('dark-btn');
+  btn.textContent=on?'☀️':'🌙';
+}
+function toggleDark(){
+  const isDark=document.body.classList.contains('dark');
+  store.dark=isDark?'off':'on'; save(store); applyDark(!isDark);
+}
+function initDark(){
+  if(store.dark==='on'){applyDark(true);return}
+  if(store.dark==='off'){applyDark(false);return}
+  applyDark(window.matchMedia('(prefers-color-scheme: dark)').matches);
+}
+window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change',e=>{
+  if(!store.dark) applyDark(e.matches);
+});
+
+/* ── tokens ───────────────────────────────────────────────────────────── */
+const PLACEHOLD={fqdn:'‹FQDN›',password:'‹password›',studentid:'‹student ID›',last3:'‹id›'};
+function applyTokens(){
+  document.querySelectorAll('.tok').forEach(el=>{
+    const k=el.dataset.tok; let v;
+    if(k==='last3'){const id=store.cfg.studentid||'';v=id?id.slice(-3):'';}
+    else v=store.cfg[k]||'';
+    el.textContent=v||PLACEHOLD[k]||('‹'+k+'›');
+  });
+}
+function saveConfig(){
+  store.cfg.fqdn=document.getElementById('cfg-fqdn').value.trim();
+  store.cfg.password=document.getElementById('cfg-password').value.trim();
+  store.cfg.studentid=document.getElementById('cfg-studentid').value.trim();
+  save(store); applyTokens(); toast('Configuration saved');
+}
+function clearConfig(){
+  store.cfg={}; save(store);
+  ['fqdn','password','studentid'].forEach(k=>document.getElementById('cfg-'+k).value='');
+  applyTokens(); toast('Configuration cleared');
+}
+
+/* ── copy buttons ─────────────────────────────────────────────────────── */
+function flash(btn){btn.classList.add('copied');const o=btn.textContent;btn.textContent='✓';setTimeout(()=>{btn.classList.remove('copied');btn.textContent=o},1200)}
+function doCopy(txt,btn){
+  if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(txt).then(()=>flash(btn)).catch(()=>fallbackCopy(txt,btn));}
+  else fallbackCopy(txt,btn);
+}
+function fallbackCopy(txt,btn){const ta=document.createElement('textarea');ta.value=txt;document.body.appendChild(ta);ta.select();try{document.execCommand('copy');flash(btn)}catch(e){}document.body.removeChild(ta)}
+function copyCode(btn){const c=btn.parentElement.cloneNode(true);c.querySelector('.copy-btn')?.remove();doCopy(c.textContent.trim(),btn)}
+function copyPad(btn){const ta=btn.closest('.pad').querySelector('textarea');doCopy(ta.value,btn)}
+
+/* ── notes persistence ────────────────────────────────────────────────── */
+function bindNotes(){
+  document.querySelectorAll('[data-note]').forEach(ta=>{
+    const k=ta.dataset.note;
+    if(store.notes[k]!=null)ta.value=store.notes[k];
+    ta.addEventListener('input',()=>{store.notes[k]=ta.value;save(store)});
+  });
+}
+
+/* ── checklist + progress ─────────────────────────────────────────────── */
+function bindChecks(){
+  const boxes=[...document.querySelectorAll('.progress-wrap input[type=checkbox]')];
+  const fill=document.getElementById('prog-fill'),count=document.getElementById('prog-count');
+  function update(){
+    const done=boxes.filter(b=>b.checked).length;
+    if(count)count.textContent=done+' / '+boxes.length;
+    if(fill)fill.style.width=(boxes.length?done/boxes.length*100:0)+'%';
+  }
+  boxes.forEach(b=>{
+    if(store.checks[b.id])b.checked=true;
+    b.addEventListener('change',()=>{store.checks[b.id]=b.checked;save(store);update()});
+  });
+  update();
+}
+
+/* ── reading progress bar ─────────────────────────────────────────────── */
+window.addEventListener('scroll',()=>{
+  const h=document.documentElement;
+  document.getElementById('progress-bar').style.width=(h.scrollTop/(h.scrollHeight-h.clientHeight)*100)+'%';
+});
+
+/* ── init ─────────────────────────────────────────────────────────────── */
+(function(){
+  initDark();
+  ['fqdn','password','studentid'].forEach(k=>{if(store.cfg[k])document.getElementById('cfg-'+k).value=store.cfg[k];});
+  applyTokens(); bindNotes(); bindChecks();
+})();
+</script>
+</body>
+</html>
