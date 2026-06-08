@@ -1,0 +1,12 @@
+# macOS metadata
+.DS_Store
+**/.DS_Store
+
+# Draft / source markdown (not deployed)
+*.md
+!README.md
+
+# Editor artefacts
+.vscode/
+*.swp
+*.swo
