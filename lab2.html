@@ -336,7 +336,7 @@ table.qref td:last-child{color:var(--ink-2)}
   <details class="config" open>
     <summary>Lab Configuration</summary>
     <div class="body">
-      <div class="field"><label>AI Guard Console URL</label><input id="cfg-fqdn" placeholder="admin.us1.zseclipse.net"></div>
+      <div class="field"><label>AI Guard Console URL</label><input id="cfg-fqdn" placeholder="adonis.us1.zseclipse.net"></div>
       <div class="field"><label>Session Password</label><input id="cfg-password" placeholder="••••••"></div>
       <div class="field"><label>Student / Customer ID</label><input id="cfg-studentid" placeholder="000312"></div>
       <button class="btn primary" onclick="saveConfig()">Save</button>
@@ -364,7 +364,7 @@ table.qref td:last-child{color:var(--ink-2)}
   </div>
 
   <div class="meta">
-    <span class="pill"><b>Time</b> ~40 min</span>
+    <span class="pill"><b>Time</b> ~30 min</span>
     <span class="pill"><b>Service</b> AI Guard</span>
     <span class="pill"><b>Prerequisite</b> AI Guard tenant · LLM provider key</span>
     <span class="pill"><b>Audience</b> Security engineers · AI platform teams</span>
@@ -680,41 +680,6 @@ print(response.choices[0].message.content)<button class="copy-btn" onclick="copy
     <div class="check"><input type="checkbox" id="c6"><label for="c6">Located a blocked transaction ID in the audit log and confirmed the full record is present</label></div>
     <div class="check"><input type="checkbox" id="c7"><label for="c7">(Optional) Routed a Python LiteLLM client through the AI Guard proxy — clean prompt passed, injected prompt was blocked</label></div>
   </div>
-
-  <!-- quick reference -->
-  <details>
-    <summary>Quick Reference</summary>
-    <div class="body">
-      <table class="qref">
-        <tr><td>AI Guard console</td><td><code>https://<span class="tok" data-tok="fqdn"></span></code></td></tr>
-        <tr><td>LLM Providers path</td><td>AI Guard → LLM Providers → Add Provider</td></tr>
-        <tr><td>Proxy test tool</td><td>AI Guard → LLM Providers → Test (Proxy Mode)</td></tr>
-        <tr><td>Policy path</td><td>AI Guard → Policies → Create Policy → Activate</td></tr>
-        <tr><td>Audit / transaction log</td><td>AI Guard → Logs → search by Transaction ID</td></tr>
-        <tr><td>Cloud region suffixes</td><td><code>us1</code> / <code>us2</code> / <code>eu1</code> / <code>eu2</code></td></tr>
-        <tr><td>Detectors — BLOCK</td><td>Toxicity · Prompt Injection · Jailbreak · PII · Secrets · Malicious URLs (response)</td></tr>
-        <tr><td>Detectors — DETECT</td><td>Competitor / Sensitive Topics</td></tr>
-        <tr><td>LiteLLM install</td><td><code>pip install litellm</code></td></tr>
-        <tr><td>Proxy mode limit (Claude Desktop)</td><td>Claude Desktop has no configurable model base URL — proxy mode cannot intercept its traffic. Use console test tool or custom client instead.</td></tr>
-        <tr><td>NIST / EU AI Act alignment</td><td>Transaction log = measure + manage evidence; DETECT entries = ongoing monitoring record</td></tr>
-      </table>
-    </div>
-  </details>
-
-  <!-- troubleshooting -->
-  <details>
-    <summary>Appendix — Troubleshooting</summary>
-    <div class="body">
-      <table class="qref">
-        <tr><td>Provider not listed in test tool</td><td>Save was not confirmed, or page needs a refresh. Re-open LLM Providers and confirm the provider status is Active.</td></tr>
-        <tr><td>Policy not applying</td><td>Policy not associated with the provider, or not activated. Check the policy status indicator and the provider-policy binding.</td></tr>
-        <tr><td>All prompts ALLOW (no blocks)</td><td>Detectors may be in DETECT-only mode. Re-open the policy and verify BLOCK is set for the expected detectors.</td></tr>
-        <tr><td>Scenario 8 blocks the prompt (not just the response)</td><td>The prompt content itself may have triggered another detector. Try a more neutral phrasing: <em>"List three examples of suspicious URL patterns"</em>.</td></tr>
-        <tr><td>LiteLLM returns 401</td><td>API key is wrong or expired. Confirm the provider key in AI Guard → LLM Providers matches what you pasted into <code>litellm.api_key</code>.</td></tr>
-        <tr><td>Transaction ID not found in audit log</td><td>Log indexing may take a few seconds. Wait 10–15 s and search again.</td></tr>
-      </table>
-    </div>
-  </details>
 
   <div class="foot">
     <div class="labnav">

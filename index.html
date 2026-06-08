@@ -347,7 +347,7 @@ table.qref td:last-child{color:var(--ink-2)}
   </div>
 
   <div class="meta">
-    <span class="pill"><b>Time</b> ~45 min</span>
+    <span class="pill"><b>Time</b> ~30 min</span>
     <span class="pill"><b>Services</b> ZIA + ZPA</span>
     <span class="pill"><b>Prerequisite</b> OneAPI enabled · Claude Desktop installed</span>
     <span class="pill"><b>Audience</b> Security engineers · DevSecOps · Platform admins</span>
@@ -683,20 +683,6 @@ table.qref td:last-child{color:var(--ink-2)}
         <tr><td>Windows manual config</td><td>Settings → Developer → Edit Config → add <code>mcpServers.zscaler-mcp-server</code> block with <code>uvx</code> + <code>--env-file</code></td></tr>
         <tr><td>No tools visible</td><td>Fully quit and reopen Claude Desktop; confirm extension enabled in Settings → Connectors</td></tr>
         <tr><td>403 errors</td><td>API role not assigned to the OneAPI credential in Z Identity</td></tr>
-      </table>
-    </div>
-  </details>
-
-  <!-- troubleshooting -->
-  <details>
-    <summary>Appendix — Troubleshooting</summary>
-    <div class="body">
-      <table class="qref">
-        <tr><td>Extension installs but "no Zscaler tools"</td><td>Claude Desktop not fully restarted, or extension disabled. Quit and reopen entirely; check Settings → Extensions.</td></tr>
-        <tr><td>Config screen rejects credentials</td><td>Wrong values, or OneAPI not enabled. Re-check four values in Z Identity; confirm with Zscaler account team.</td></tr>
-        <tr><td>Tools listed but calls return <code>403</code></td><td>Credential lacks required API role. Create/sync a role in the relevant product, link to the OneAPI credential in Z Identity.</td></tr>
-        <tr><td>Write prompt runs but no HMAC confirm appears</td><td>Write tool not in allowlist, or write toggle is off. Reopen extension config and confirm both settings.</td></tr>
-        <tr><td>HMAC confirm shows wrong payload</td><td><strong>Reject the confirmation.</strong> Re-prompt with explicit constraints. Never approve a payload you didn't intend.</td></tr>
       </table>
     </div>
   </details>
