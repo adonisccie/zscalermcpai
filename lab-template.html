@@ -55,6 +55,36 @@
   --sans:'Hanken Grotesk',system-ui,sans-serif;
   --display:'Sora',var(--sans);
 }
+/* ── dark mode token overrides ───────────────────────────────────────── */
+body.dark{
+  --ink:#e8eef7;
+  --ink-2:#a8b8cc;
+  --ink-3:#58687a;
+  --paper:#0d1117;
+  --card:#161c2d;
+  --line:#212840;
+  --line-2:#2a3352;
+  --signal-bg:#1a140d;
+  --danger-bg:#1a0f0d;
+  --shadow:0 1px 2px rgba(0,0,0,.2), 0 10px 30px -18px rgba(0,0,0,.5);
+}
+body.dark{
+  background-image:radial-gradient(circle at 1px 1px,rgba(255,255,255,.04) 1px,transparent 0);
+}
+body.dark .quiz{background:var(--signal-bg);border-color:#3d2e1a}
+body.dark .q .answer{background:#0d1117}
+body.dark .box.verify{background:#0a1f1c}
+body.dark .box.warn{background:var(--danger-bg)}
+body.dark .box.mental{background:#141824;border-color:var(--line-2)}
+body.dark .code{background:#080c14}
+body.dark .config input,
+body.dark .scratch textarea,
+body.dark .q textarea{background:#0d1117;color:var(--ink);border-color:var(--line-2)}
+body.dark .config input:focus,
+body.dark .scratch textarea:focus,
+body.dark .q textarea:focus{background:var(--card)}
+
+/* ── reset + base ────────────────────────────────────────────────────── */
 *{box-sizing:border-box}
 html{scroll-behavior:smooth}
 body{
@@ -62,8 +92,19 @@ body{
   line-height:1.62;font-size:16.5px;-webkit-font-smoothing:antialiased;
   background-image:radial-gradient(circle at 1px 1px,rgba(18,22,29,.045) 1px,transparent 0);
   background-size:26px 26px;
+  transition:background .25s,color .25s;
 }
 .wrap{max-width:880px;margin:0 auto;padding:0 22px}
+
+/* ── dark mode toggle button ─────────────────────────────────────────── */
+.controls{position:fixed;top:14px;right:16px;z-index:55}
+.ctrl-btn{
+  font-family:var(--mono);font-size:13px;font-weight:600;
+  background:var(--card);color:var(--ink-2);border:1px solid var(--line);
+  border-radius:8px;padding:6px 11px;cursor:pointer;
+  box-shadow:var(--shadow);transition:.15s;
+}
+.ctrl-btn:hover{border-color:var(--accent);color:var(--accent)}
 
 /* reading-progress bar */
 #progress-bar{position:fixed;top:0;left:0;height:3px;width:0;background:var(--accent);z-index:60;transition:width .1s linear}
@@ -79,6 +120,7 @@ body{
   font-weight:600;letter-spacing:.16em;text-transform:uppercase;color:var(--accent);
   background:#eaf0fd;border:1px solid #d3e0fb;padding:6px 12px;border-radius:999px;margin:26px 0 14px}
 .eyebrow::before{content:"";width:7px;height:7px;border-radius:50%;background:var(--accent)}
+body.dark .eyebrow{background:#0e1a3a;border-color:#1a3070}
 
 /* hero */
 .hero-title{font-family:var(--display);font-weight:800;font-size:clamp(34px,6vw,56px);
@@ -124,9 +166,11 @@ a{color:var(--accent)}
 .tok{font-family:var(--mono);font-size:.92em;background:#eef3fe;border:1px solid #d6e2fb;
   border-radius:6px;padding:1px 7px;color:var(--accent-deep);white-space:nowrap}
 .tok:empty::before{content:"‹set in config›";color:var(--ink-3)}
+body.dark .tok{background:#0e1a3a;border-color:#1a3070;color:#7aadff}
 
 /* inline + block code */
 code{font-family:var(--mono);font-size:.9em;background:#eeece5;border:1px solid var(--line);border-radius:5px;padding:1px 6px}
+body.dark code{background:#1a2035;border-color:var(--line-2)}
 .code{position:relative;font-family:var(--mono);font-size:13.5px;line-height:1.55;background:var(--ink);color:#e8eef7;
   border-radius:10px;padding:15px 50px 15px 16px;margin:12px 0;white-space:pre-wrap;word-break:break-word}
 .code .copy-btn{position:absolute;top:9px;right:9px}
@@ -245,6 +289,11 @@ table.qref td:last-child{color:var(--ink-2)}
 </head>
 <body>
 <div id="progress-bar"></div>
+
+<!-- ── dark mode toggle ──────────────────────────────────────────────── -->
+<div class="controls">
+  <button class="ctrl-btn" id="dark-btn" onclick="toggleDark()" title="Toggle dark mode">🌙</button>
+</div>
 
 <div class="wrap">
 
@@ -417,11 +466,30 @@ table.qref td:last-child{color:var(--ink-2)}
 
 <script>
 /* ---------- storage helpers (never throw, so the page works even if storage is blocked) ---------- */
-const KEY='lab-template-v1';   /* change per course if you want separate saved data */
+const KEY='lab-template-v1';   /* change per lab, e.g. 'lab3-zpa-v1', to keep stored data separate */
 function load(){try{return JSON.parse(localStorage.getItem(KEY))||{}}catch(e){return{}}}
 function save(o){try{localStorage.setItem(KEY,JSON.stringify(o))}catch(e){}}
 let store=load();
-store.cfg=store.cfg||{}; store.notes=store.notes||{}; store.checks=store.checks||{};
+store.cfg=store.cfg||{}; store.notes=store.notes||{}; store.checks=store.checks||{}; store.dark=store.dark||'';
+
+/* ---------- dark mode ---------- */
+function applyDark(on){
+  document.body.classList.toggle('dark',on);
+  const btn=document.getElementById('dark-btn');
+  btn.textContent=on?'☀️':'🌙';
+}
+function toggleDark(){
+  const isDark=document.body.classList.contains('dark');
+  store.dark=isDark?'off':'on'; save(store); applyDark(!isDark);
+}
+function initDark(){
+  if(store.dark==='on'){applyDark(true);return}
+  if(store.dark==='off'){applyDark(false);return}
+  applyDark(window.matchMedia('(prefers-color-scheme: dark)').matches);
+}
+window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change',e=>{
+  if(!store.dark) applyDark(e.matches);
+});
 
 /* ---------- toast ---------- */
 let tT;function toast(m){const t=document.getElementById('toast');t.textContent=m;t.classList.add('show');clearTimeout(tT);tT=setTimeout(()=>t.classList.remove('show'),1600)}
@@ -491,6 +559,7 @@ window.addEventListener('scroll',()=>{
 
 /* ---------- init ---------- */
 (function(){
+  initDark();
   ['fqdn','password','studentid'].forEach(k=>{if(store.cfg[k])document.getElementById('cfg-'+k).value=store.cfg[k];});
   applyTokens();bindNotes();bindChecks();
 })();
