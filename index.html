@@ -377,17 +377,6 @@ table.qref td:last-child{color:var(--ink-2)}
     </div>
 
     <div class="q">
-      <div class="qtext">After you paste your OneAPI credentials into the extension's GUI and click Save, where are they stored — and why does this matter compared to a <code>.env</code> file or <code>claude_desktop_config.json</code>?</div>
-      <textarea data-note="q2-answer" placeholder="Your answer…"></textarea>
-      <details class="answer">
-        <summary>See Model Answer</summary>
-        <div class="body">
-          <p>The extension stores credentials in your <strong>OS keychain</strong> — macOS Keychain Access, Linux Secret Service, or Windows Credential Manager. This matters because: (1) the keychain encrypts secrets at rest using OS-level protection tied to your user account; (2) credentials are never written to a plaintext file that could be accidentally committed to a repo or read by another process; (3) the extension retrieves them at runtime without exposing them in environment variables that child processes can inherit. A <code>.env</code> file or JSON config is just plaintext on disk — none of these protections apply.</p>
-        </div>
-      </details>
-    </div>
-
-    <div class="q">
       <div class="qtext">The extension is read-only by default. What additional mechanism protects write operations when you opt into them, and at exactly what point does explicit human accountability enter the loop?</div>
       <textarea data-note="q3-answer" placeholder="Your answer…"></textarea>
       <details class="answer">
@@ -416,7 +405,7 @@ table.qref td:last-child{color:var(--ink-2)}
         <li>Click <b>Install</b>. Claude Desktop downloads the bundle and opens the configuration screen automatically.</li>
       </ol>
       <div class="box note"><span class="tag">Note</span>
-        <p><b>Windows users:</b> the one-click bundle contains packages built for macOS/Linux. On Windows, use the manual config path in the Quick Reference table, then rejoin at Task 1.2.</p>
+        <p><b>Windows users:</b> the one-click bundle contains packages built for macOS. On Windows, use the manual config path in the Quick Reference table, then rejoin at Task 1.2.</p>
       </div>
       <div class="scratch">
         <div class="pad"><div class="hd"><b>My Questions</b><button class="copy-btn light" onclick="copyPad(this)">Copy</button></div>
@@ -451,7 +440,7 @@ table.qref td:last-child{color:var(--ink-2)}
         <li>Click <b>Save</b>. Claude Desktop writes the values to your OS keychain.</li>
       </ol>
       <div class="box warn"><span class="tag">⚠️ Warning</span>
-        <p>If any of the four fields are missing or incorrect, the extension will not authenticate. Stop and resolve with your Zscaler admin before proceeding.</p>
+        <p>If any of the four fields are missing or incorrect, the extension will not authenticate. Stop and resolve with your instructor or Lab Team before proceeding.</p>
       </div>
       <div class="scratch">
         <div class="pad"><div class="hd"><b>My Questions</b><button class="copy-btn light" onclick="copyPad(this)">Copy</button></div>
