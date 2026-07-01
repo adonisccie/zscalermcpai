@@ -347,14 +347,14 @@ table.qref td:last-child{color:var(--ink-2)}
   <div class="hero-banner reveal">
     <img src="images/lab2-hero.png" alt="AI Guard Proxy Mode architecture diagram"
          onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
-    <div class="fallback" style="display:none"><b>Lab 2 — AI Guard Proxy Mode</b></div>
+    <div class="fallback" style="display:none"><b>Lab 2 — AI Guard</b></div>
   </div>
 
   <div class="box scenario reveal">
     <span class="tag">Scenario</span>
     <p>You are a security engineer enabling AI inspection for your organisation's LLM traffic.
        Your team has been running AI workloads without any visibility into what users are sending —
-       and what models are sending back. Today you'll configure Zscaler AI Guard in proxy mode,
+       and what models are sending back. Today you'll configure Zscaler AI Guard,
        register a live LLM provider, build a detection policy, and run nine test prompts to confirm
        that toxicity, prompt injection, jailbreak, PII, and secrets are all blocked inline —
        with zero changes to application code.</p>
@@ -366,35 +366,14 @@ table.qref td:last-child{color:var(--ink-2)}
   <div class="meta">
     <span class="pill"><b>Time</b> ~30 min</span>
     <span class="pill"><b>Service</b> AI Guard</span>
-    <span class="pill"><b>Prerequisite</b> AI Guard tenant · LLM provider key</span>
+    <span class="pill"><b>Prerequisite</b> AI Guard tenant</span>
     <span class="pill"><b>Audience</b> Security engineers · AI platform teams</span>
   </div>
 
-  <div class="box warn reveal">
-    <span class="tag">⚠️ Read First — Proxy mode scope</span>
-    <p><strong>Proxy mode enforces by changing the LLM base URL</strong> so requests traverse AI Guard.
-       Claude Desktop sends prompts straight to Anthropic's backend with no configurable model base URL —
-       it cannot be intercepted by proxy mode. That is a hard architectural limit, not a configuration gap.<br><br>
-       For this lab use the <strong>built-in console test tool</strong> (Part C) or an optional test client (Part D).
-       Claude Desktop + Zscaler MCP remains the right story for <em>management operations</em>; AI Guard proxy mode is the right story for <em>prompt and response inspection</em>.</p>
-  </div>
 
   <!-- ── THINK FIRST ──────────────────────────────────────────────────── -->
   <div class="quiz reveal">
-    <span class="tag">Think First · Proxy Mode &amp; Inspection Model</span>
-
-    <div class="q">
-      <div class="qtext">Proxy mode and DAS (Direct API Scan) mode both inspect prompts and responses — but they differ in <em>where</em> the enforcement point lives. Explain that difference, and describe a scenario where you would choose proxy mode over DAS mode.</div>
-      <textarea data-note="q1-answer" placeholder="Your answer…"></textarea>
-      <details class="answer">
-        <summary>See Model Answer</summary>
-        <div class="body">
-          <p><strong>DAS mode:</strong> AI Guard is a side-car. Your application explicitly calls the AI Guard API for every prompt and response — you write and maintain the scan-call code. The enforcement point is inside your application logic.</p>
-          <p><strong>Proxy mode:</strong> AI Guard sits inline on the network path between the AI client and the LLM provider. You reroute traffic by changing the LLM base URL to point at AI Guard's proxy endpoint. No scan-call code — the enforcement point is the network hop, not application code.</p>
-          <p><strong>Choose proxy mode when:</strong> you have many AI apps and want a single choke point without touching each codebase; you're enforcing on third-party or legacy clients where you can't add API calls; or you want centralised logging for all LLM traffic regardless of which app generated it.</p>
-        </div>
-      </details>
-    </div>
+    <span class="tag">Inspection Model</span>
 
     <div class="q">
       <div class="qtext">AI Guard will inspect both the <em>prompt</em> (going to the model) and the <em>response</em> (coming back). Why does bidirectional inspection matter, and what kind of threat does response inspection specifically address?</div>
@@ -422,40 +401,7 @@ table.qref td:last-child{color:var(--ink-2)}
   </div>
 
   <!-- ══════════════════════════════════════════════════════════════════ -->
-  <h2 class="section">Part A — Register Your LLM Provider</h2>
-  <p style="color:var(--ink-2);margin-top:6px">~8 min · Console only. Credentials stay in AI Guard — not your code.</p>
-
-  <details open>
-    <summary><span class="tasknum">Task 2.1</span> Add a provider in AI Guard</summary>
-    <div class="body">
-      <p>AI Guard needs to know which LLM providers it is proxying so it can route authenticated traffic on your behalf. You register the provider once; from then on your clients point at AI Guard's endpoint instead of the provider directly.</p>
-      <ol class="steps">
-        <li>Log in to the AI Guard console: <code>https://<span class="tok" data-tok="fqdn"></span></code></li>
-        <li>Navigate to <b>AI Guard → LLM Providers</b> (also labelled "Managing LLM Providers").</li>
-        <li>Click <b>Add Provider</b> and choose the provider type — OpenAI, Azure OpenAI, Anthropic, or another listed option.</li>
-        <li>Enter:
-          <ul>
-            <li><b>Provider API Key</b> — your lab key for this provider</li>
-            <li><b>Friendly name</b> — e.g. <code>lab-openai</code></li>
-            <li><b>Base URL</b> (Azure / custom endpoints only) — the provider-specific endpoint</li>
-          </ul>
-        </li>
-        <li>Click <b>Save</b>. AI Guard creates an inline proxy route to that provider. The proxy endpoint URL for your client is now shown — copy it for Part D if you run the optional code path.</li>
-      </ol>
-      <div class="box note"><span class="tag">Note</span>
-        <p>The SDC lab environment has Steps 4–7 pre-configured. If your tenant is already set up, confirm the provider appears in the list and move to Task 2.2.</p>
-      </div>
-      <div class="scratch">
-        <div class="pad"><div class="hd"><b>My Questions</b><button class="copy-btn light" onclick="copyPad(this)">Copy</button></div>
-          <textarea data-note="t2.1-q" placeholder="Anything you want to ask the instructor…"></textarea></div>
-        <div class="pad"><div class="hd"><b>My Notes</b><button class="copy-btn light" onclick="copyPad(this)">Copy</button></div>
-          <textarea data-note="t2.1-n" placeholder="Proxy endpoint URL, provider name…"></textarea></div>
-      </div>
-    </div>
-  </details>
-
-  <!-- ══════════════════════════════════════════════════════════════════ -->
-  <h2 class="section">Part B — Configure the Detection Policy</h2>
+  <h2 class="section">Part A — Configure the Detection Policy</h2>
   <p style="color:var(--ink-2);margin-top:6px">~8 min · Enable detectors and activate the policy.</p>
 
   <details open>
@@ -500,7 +446,7 @@ table.qref td:last-child{color:var(--ink-2)}
     <div class="body">
       <p>AI Guard ships a built-in test tool that lets you send prompts through the proxy pipeline directly from the console — no SDK, no terminal, no test client. This is the recommended demo path for this lab.</p>
       <ol class="steps">
-        <li>Navigate to <b>AI Guard → LLM Providers → Test (Proxy Mode)</b>.</li>
+        <li>Navigate to <b>AI Guard → /b>.</li>
         <li>Select your registered provider from the dropdown.</li>
         <li>Confirm the active policy is shown in the policy field.</li>
         <li>Leave the test tool open — you'll submit prompts here in Task 2.4.</li>
@@ -591,82 +537,7 @@ table.qref td:last-child{color:var(--ink-2)}
     </div>
   </details>
 
-  <!-- ══════════════════════════════════════════════════════════════════ -->
-  <h2 class="section">Part D — Audit &amp; Verification</h2>
-  <p style="color:var(--ink-2);margin-top:6px">~5 min · Confirm the audit trail AI Guard creates for each decision.</p>
-
-  <details open>
-    <summary><span class="tasknum">Task 2.5</span> Verify the audit log</summary>
-    <div class="body">
-      <ol class="steps">
-        <li>Copy a transaction ID from one of the BLOCK results in Task 2.4.</li>
-        <li>In AI Guard console, search the transaction ID in the audit/logs section.</li>
-        <li>Confirm the record shows: user, application, prompt content, response (if any), policy applied, detectors triggered, and action taken.</li>
-        <li>Note the DETECT entry for scenario 9 — confirm it is logged but not blocked.</li>
-      </ol>
-      <div class="box note"><span class="tag">Governance Note</span>
-        <p>AI Guard logs users, apps, prompts, responses, policies, and actions — providing the per-transaction audit trail required for NIST AI Risk Management Framework and EU AI Act alignment. The transaction ID returned inline is the primary key to this record; include it in any change-control or incident ticket.</p>
-      </div>
-      <div class="scratch">
-        <div class="pad"><div class="hd"><b>My Questions</b><button class="copy-btn light" onclick="copyPad(this)">Copy</button></div>
-          <textarea data-note="t2.5-q" placeholder="Anything you want to ask the instructor…"></textarea></div>
-        <div class="pad"><div class="hd"><b>My Notes</b><button class="copy-btn light" onclick="copyPad(this)">Copy</button></div>
-          <textarea data-note="t2.5-n" placeholder="Your observations from the audit log…"></textarea></div>
-      </div>
-    </div>
-  </details>
-
-  <!-- ══════════════════════════════════════════════════════════════════ -->
-  <h2 class="section">Part E (Optional) — Real Client via LiteLLM</h2>
-  <p style="color:var(--ink-2);margin-top:6px">~10 min · Requires Python 3.10+ and an LLM provider key.</p>
-
-  <details>
-    <summary><span class="tasknum">Task 2.6</span> Route a Python client through AI Guard</summary>
-    <div class="body">
-      <div class="box warn"><span class="tag">Optional</span>
-        <p>This task requires Python 3.10+, <code>pip install litellm</code>, and an LLM provider API key. Skip it if you are running the lab in a console-only environment — the console test tool in Task 2.4 demonstrates identical enforcement.</p>
-      </div>
-      <ol class="steps">
-        <li>Install LiteLLM if not already present:
-          <div class="code">pip install litellm<button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
-        </li>
-        <li>Copy the proxy endpoint URL from Task 2.1 (shown after you saved the provider).</li>
-        <li>Create a test file:
-          <div class="code">import litellm
-
-litellm.api_base = "https://&lt;your-aiguard-proxy-endpoint&gt;"
-litellm.api_key  = "&lt;your-provider-api-key&gt;"
-
-response = litellm.completion(
-    model="gpt-4o",          # match the provider you registered
-    messages=[{"role": "user", "content": "What is zero trust architecture?"}]
-)
-print(response.choices[0].message.content)<button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
-        </li>
-        <li>Run the script. Confirm it returns a real model response (scenario 1 — clean prompt).</li>
-        <li>Change the message content to the prompt injection string from scenario 4 and run again. Confirm AI Guard returns a block verdict instead of forwarding to the model.</li>
-      </ol>
-      <div class="box verify"><span class="tag">Verify</span>
-        <p>Clean prompt returns model output. Injected prompt is blocked with a <code>403</code> or block-verdict JSON, <em>not</em> forwarded to the provider.</p>
-      </div>
-      <div class="scratch">
-        <div class="pad"><div class="hd"><b>My Questions</b><button class="copy-btn light" onclick="copyPad(this)">Copy</button></div>
-          <textarea data-note="t2.6-q" placeholder="Anything you want to ask the instructor…"></textarea></div>
-        <div class="pad"><div class="hd"><b>My Notes</b><button class="copy-btn light" onclick="copyPad(this)">Copy</button></div>
-          <textarea data-note="t2.6-n" placeholder="Proxy endpoint, test results…"></textarea></div>
-      </div>
-    </div>
-  </details>
-
-  <div class="box mental reveal">
-    <span class="tag">🧠 Mental Note</span>
-    <p><strong>Proxy mode = inline enforcement with zero code changes.</strong>
-       Register provider → activate policy → point your client's base URL at AI Guard.
-       Every prompt and response traverses the inspection engine automatically.
-       BLOCK stops traffic before it reaches the model or the user.
-       DETECT logs for governance without disrupting flow.
-       The transaction ID ties every decision to a full audit record — your evidence for NIST AI RMF, EU AI Act, and any internal change-control process.</p>
-  </div>
+  
 
   <!-- progress checklist -->
   <div class="progress-wrap reveal">
