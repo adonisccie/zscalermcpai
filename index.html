@@ -10,7 +10,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Lab 1: Zscaler MCP + Claude AI — ZS-AIGUARD</title>
+<title>Lab 1: Zscaler MCP + Claude AI</title>
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -311,8 +311,7 @@ table.qref td:last-child{color:var(--ink-2)}
   <span class="eyebrow">Lab 1 · Zscaler MCP</span>
   <h1 class="hero-title">Zscaler MCP <em>+ Claude AI</em></h1>
   <p class="lede">
-    From credentials to natural-language Zscaler operations in 45 minutes —
-    no JSON, no pagination, no portal clicking. Just prompts.
+    Claude AI automation with Zscaler no coding no portal clicking. Just prompts.
   </p>
 
   <!-- Lab Configuration -->
@@ -390,7 +389,7 @@ table.qref td:last-child{color:var(--ink-2)}
 
   <!-- ══════════════════════════════════════════════════════════════════ -->
   <h2 class="section">Task 1 — Install the Zscaler Extension in Claude Desktop</h2>
-  <p style="color:var(--ink-2);margin-top:6px">~10 min · No terminal, no config files — GUI only.</p>
+  <p style="color:var(--ink-2);margin-top:6px">No terminal, no config files — GUI only.</p>
 
   <details open>
     <summary><span class="tasknum">Task 1.1</span> Open the Extensions directory</summary>
@@ -403,10 +402,9 @@ table.qref td:last-child{color:var(--ink-2)}
         <li>Click <b>Plus (+) icon → Browse Connectors</b> to open the official directory.</li>
         <li>Search for <b>Zscaler</b> and select <b>Zscaler MCP Server</b>.</li>
         <li>Click <b>Install</b>. Claude Desktop downloads the bundle and opens the configuration screen automatically.</li>
+        <li>Click <b>Configure</b>. Config Zscaler MCP Parameters. </li>
       </ol>
-      <div class="box note"><span class="tag">Note</span>
-        <p><b>Windows users:</b> the one-click bundle contains packages built for macOS. On Windows, use the manual config path in the Quick Reference table, then rejoin at Task 1.2.</p>
-      </div>
+    
       <div class="scratch">
         <div class="pad"><div class="hd"><b>My Questions</b><button class="copy-btn light" onclick="copyPad(this)">Copy</button></div>
           <textarea data-note="t1.1-q" placeholder="Anything you want to ask the instructor…"></textarea></div>
@@ -415,7 +413,11 @@ table.qref td:last-child{color:var(--ink-2)}
       </div>
     </div>
   </details>
-
+ <div class="hero-banner reveal">
+    <img src="images/installzmcp.png" alt="Install Zscaler MCP Server extension in Claude Desktop"
+         onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+    <div class="fallback" style="display:none"><b>Lab 1 — Zscaler MCP + Claude AI</b></div>
+  </div>
   <details>
     <summary><span class="tasknum">Task 1.2</span> Enter your OneAPI credentials</summary>
     <div class="body">
@@ -450,7 +452,11 @@ table.qref td:last-child{color:var(--ink-2)}
       </div>
     </div>
   </details>
-
+ <div class="hero-banner reveal">
+    <img src="images/config2mcp.png" alt="Configure Zscaler MCP Server extension in Claude Desktop"
+         onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+    <div class="fallback" style="display:none"><b>Lab 1 — Zscaler MCP + Claude AI</b></div>
+  </div>
   <details>
     <summary><span class="tasknum">Task 1.3</span> Scope the tools (recommended)</summary>
     <div class="body">
@@ -476,14 +482,22 @@ table.qref td:last-child{color:var(--ink-2)}
       </div>
     </div>
   </details>
-
+<div class="hero-banner reveal">
+    <img src="images/config1mcp.png" alt="Configure Zscaler MCP Server extension in Claude Desktop"
+         onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+    <div class="fallback" style="display:none"><b>Lab 1 — Zscaler MCP + Claude AI</b></div>
+  </div><div class="hero-banner reveal">
+    <img src="images/config3mcp.png" alt="Configure Zscaler MCP Server extension in Claude Desktop"
+         onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+    <div class="fallback" style="display:none"><b>Lab 1 — Zscaler MCP + Claude AI</b></div>
+  </div>
   <details>
     <summary><span class="tasknum">Task 1.4</span> Verify Claude sees the tools</summary>
     <div class="body">
       <p>Start a new conversation in Claude Desktop and run the verification prompt:</p>
       <div class="code">List the Zscaler tools you have access to, grouped by ZIA vs ZPA.<button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
       <div class="box verify"><span class="tag">Verify</span>
-        <p>Claude should list tool names like <code>zia_url_filtering_list</code>, <code>zpa_application_segment_list</code>, etc., grouped by service.
+        <p>Claude should list tool names like <code>zia_list_url_filtering_rules</code>, <code>zpa_list_application_segments</code>, etc., grouped by service.
            If Claude says it has no Zscaler tools: fully quit and reopen Claude Desktop, then check
            <b>Settings → Connectors</b> to confirm the Zscaler MCP connector is <b>enabled</b>.</p>
       </div>
@@ -498,7 +512,7 @@ table.qref td:last-child{color:var(--ink-2)}
 
   <!-- ══════════════════════════════════════════════════════════════════ -->
   <h2 class="section">Task 2 — Operations Made Easy with Prompts</h2>
-  <p style="color:var(--ink-2);margin-top:6px">~20 min · Eight prompts across three categories. Read results critically — you are the reviewer.</p>
+  <p style="color:var(--ink-2);margin-top:6px">~Results maybe varied depends on your Zscaler tenant configuration</p>
 
   <details open>
     <summary><span class="tasknum">Task 2A</span> Inventory — what do we have?</summary>
@@ -506,7 +520,7 @@ table.qref td:last-child{color:var(--ink-2)}
       <p>Run these three prompts in sequence. Notice you write no JSON, paginate nothing, and stitch no responses — Claude does that. Your job is to read the output critically.</p>
       <h3>Prompt 1 — ZPA application segments</h3>
       <div class="code">Using the Zscaler tools, list the first 10 ZPA application segments in our tenant. Show name, segment ID, and domain names. Format as a table.<button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
-      <p style="color:var(--ink-2);font-size:14px">Expected: Claude calls <code>zpa_application_segment_list</code>, parses the response, and returns a clean table — the first "aha" moment vs portal clicking.</p>
+      <p style="color:var(--ink-2);font-size:14px">Expected: Claude calls <code>zpa_list_application_segments</code> or <code>zpa_get_application_segment</code>, parses the response, and returns a clean table — the first "aha" moment vs portal clicking.</p>
 
       <h3>Prompt 2 — ZIA URL filtering rules</h3>
       <div class="code">How many ZIA URL filtering rules do we have in total? Group the count by action (block / allow / caution), and tell me which rules are currently disabled.<button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
@@ -538,7 +552,7 @@ table.qref td:last-child{color:var(--ink-2)}
       <p style="color:var(--ink-2);font-size:14px">Expected: A flagged list — useful as a one-prompt periodic access audit.</p>
 
       <h3>Prompt 6 — Compare user group policies</h3>
-      <div class="code">Summarize the difference between our 'Students' and 'Admin' user-group policies in ZIA. What can one reach that the other can't? Where do they overlap?<button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <div class="code">Summarize the difference between our 'Student admin group' and 'instructor Admin group' user-group policies in ZIA and ZPA What can one reach that the other can't? Where do they overlap?<button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
       <p style="color:var(--ink-2);font-size:14px">Expected: A comparison Claude assembles by inspecting both groups' policy memberships — where the AI layer earns its keep.</p>
 
       <div class="scratch">
@@ -576,20 +590,20 @@ table.qref td:last-child{color:var(--ink-2)}
 
   <!-- ══════════════════════════════════════════════════════════════════ -->
   <h2 class="section">Task 3 (Optional) — One Guarded Write</h2>
-  <p style="color:var(--ink-2);margin-top:6px">~10 min · Sandbox tenant only. Creates and deletes a test resource.</p>
+  <p style="color:var(--ink-2);margin-top:6px">Sandbox tenant only. Creates and deletes a test resource.</p>
 
   <details>
     <summary><span class="tasknum">Task 3.1</span> Enable a narrow write tool</summary>
     <div class="body">
       <div class="box warn"><span class="tag">⚠️ Sandbox only</span>
-        <p>This task creates and then deletes a real config object. The artifact is namespaced with <code>LAB-</code> to be obvious, but you are still making a real change. Do <strong>not</strong> run this on a tenant that serves real users.</p>
+        <p>This task creates and then deletes a real config object. The artifact is namespaced with <code>LAB-</code> to be obvious, but you are still making a real change. Do <strong>not</strong> run this on a tenant that serves real users. Specific options or settings maybe required and Instructor will guide you for this session</p>
       </div>
       <ol class="steps">
         <li>Open <b>Settings → Extensions → Zscaler MCP Server</b>.</li>
         <li>Toggle on <b>Enable write tools</b> and set the allowlist to:
-          <div class="code">zia_url_categories_create, zia_url_categories_delete<button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+          <div class="code">zia_create_ssl_inspection_rule, zia_create_url_filtering_rule<button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
         </li>
-        <li>Save, then <strong>fully quit and reopen Claude Desktop</strong> so the extension reloads with the new permissions.</li>
+        <li>Save, then <strong>fully quit and reopen Claude Desktop or even restart your Windows</strong> so the extension reloads with the new permissions.</li>
       </ol>
     </div>
   </details>
@@ -599,7 +613,7 @@ table.qref td:last-child{color:var(--ink-2)}
     <div class="body">
       <ol class="steps">
         <li>In a new Claude Desktop conversation, enter:
-          <div class="code">Create a new custom ZIA URL category called LAB-TEST-DELETE-ME containing exactly one URL: example.com.au. Show me what you intend to do and pause for confirmation before applying.<button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+          <div class="code">Create a new SSL inspection and URL filtering rule for username student. Show me what you intend to do and pause for confirmation before applying.<button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
         </li>
         <li>Claude will propose the tool call, surface the <strong>HMAC confirmation prompt</strong>, and wait for your approval.</li>
         <li>Read the proposed payload carefully. Approve <em>only</em> after confirming it matches your intent exactly.</li>
@@ -615,15 +629,15 @@ table.qref td:last-child{color:var(--ink-2)}
     <div class="body">
       <ol class="steps">
         <li>Verify the category was created:
-          <div class="code">List custom ZIA URL categories and find LAB-TEST-DELETE-ME. Confirm it exists and show its contents.<button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+          <div class="code">List SSL inspection and URL filtering rule. Confirm it exists and show its contents.<button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
         </li>
         <li>Then delete it:
-          <div class="code">Delete the custom URL category LAB-TEST-DELETE-ME. Confirm before deleting.<button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+          <div class="code">Delete the SSL inspection and URL filtering rule created. Confirm before deleting.<button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
         </li>
         <li>Approve the second HMAC confirmation, then re-run the list prompt to confirm the category is gone.</li>
       </ol>
       <div class="box verify"><span class="tag">Verify</span>
-        <p>You completed two HMAC confirmations (create + delete). <code>LAB-TEST-DELETE-ME</code> existed between them and is gone after the second approval.</p>
+        <p>You completed two HMAC confirmations (create + delete).</p>
       </div>
       <div class="scratch">
         <div class="pad"><div class="hd"><b>My Questions</b><button class="copy-btn light" onclick="copyPad(this)">Copy</button></div>
@@ -645,11 +659,11 @@ table.qref td:last-child{color:var(--ink-2)}
     <div class="bar"><span id="prog-fill"></span></div>
     <div class="check"><input type="checkbox" id="c1"><label for="c1">Captured all four OneAPI credential values from Z Identity (Client ID, Client Secret, Customer ID, Vanity Domain)</label></div>
     <div class="check"><input type="checkbox" id="c2"><label for="c2">Installed the Zscaler MCP Server extension in Claude Desktop via the Connectors directory</label></div>
-    <div class="check"><input type="checkbox" id="c3"><label for="c3">Entered credentials and saved (OS keychain — not a plaintext file)</label></div>
+    <div class="check"><input type="checkbox" id="c3"><label for="c3">Entered credentials and saved</label></div>
     <div class="check"><input type="checkbox" id="c4"><label for="c4">Scoped services to <code>zia, zpa</code> and toolsets to the three specified toolsets</label></div>
     <div class="check"><input type="checkbox" id="c5"><label for="c5">Verified Claude lists Zscaler tools correctly (Task 1.4 check passed)</label></div>
     <div class="check"><input type="checkbox" id="c6"><label for="c6">Completed all 8 prompts in Task 2 — all returned real tenant data, not generic guidance</label></div>
-    <div class="check"><input type="checkbox" id="c7"><label for="c7">(Optional) Completed the guarded write: created LAB-TEST-DELETE-ME via HMAC and deleted it via a second HMAC confirmation</label></div>
+    <div class="check"><input type="checkbox" id="c7"><label for="c7">(Optional) Completed the guarded write: Created a new SSL inspection and URL filtering rule</label></div>
   </div>
 
   <!-- quick reference -->
@@ -665,11 +679,11 @@ table.qref td:last-child{color:var(--ink-2)}
         <tr><td>Claude Desktop extensions</td><td>Settings → Connectors → Browse Connectors → search "Zscaler"</td></tr>
         <tr><td>Extension config</td><td>Settings → Extensions → Zscaler MCP Server</td></tr>
         <tr><td>Services scope (this lab)</td><td><code>zia, zpa</code></td></tr>
-        <tr><td>Toolsets scope (this lab)</td><td><code>zia_url_filtering, zpa_app_segments, zia_url_categories</code></td></tr>
-        <tr><td>Write allowlist (Task 3 only)</td><td><code>zia_url_categories_create, zia_url_categories_delete</code></td></tr>
+        <tr><td>Toolsets scope (this lab)</td><td><code>zia and zpa</code></td></tr>
+        <tr><td>Write allowlist (Task 3 only)</td><td><code>SSL inspection, URL filtering</code></td></tr>
         <tr><td>Tool not called — fix</td><td>Prepend: <em>"Please use the Zscaler tools to answer this."</em></td></tr>
-        <tr><td>MCP server repo</td><td><code>github.com/zscaler/zscaler-mcp-server</code></td></tr>
-        <tr><td>Windows manual config</td><td>Settings → Developer → Edit Config → add <code>mcpServers.zscaler-mcp-server</code> block with <code>uvx</code> + <code>--env-file</code></td></tr>
+        <tr><td>Zscaler MCP server repo</td><td><code>github.com/zscaler/zscaler-mcp-server</code></td></tr>
+        <tr><td>Windows manual config</td><td>Edit JSON file for write/create permissions</code></td></tr>
         <tr><td>No tools visible</td><td>Fully quit and reopen Claude Desktop; confirm extension enabled in Settings → Connectors</td></tr>
         <tr><td>403 errors</td><td>API role not assigned to the OneAPI credential in Z Identity</td></tr>
       </table>
@@ -679,9 +693,9 @@ table.qref td:last-child{color:var(--ink-2)}
   <div class="foot">
     <div class="labnav">
       <a class="prev" href="#" style="visibility:hidden"><span class="dir">←</span><span class="ttl">—</span></a>
-      <a class="next" href="lab2.html">
+      <a class="next" href="lab2333.html">
         <span class="dir">Next →</span>
-        <span class="ttl">Lab 2: AI Guard Proxy Mode</span>
+        <span class="ttl">Lab 2: AI Guard Proxy Mode (under development)</span>
       </a>
     </div>
     <p class="tagline">Prompt instead of click — and let the tools do the work.</p>
