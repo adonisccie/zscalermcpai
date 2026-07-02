@@ -318,9 +318,9 @@ table.qref td:last-child{color:var(--ink-2)}
   <details class="config" open>
     <summary>Lab Configuration</summary>
     <div class="body">
-      <div class="field"><label>Vanity Domain (FQDN)</label><input id="cfg-fqdn" placeholder="zs000abc.zslogin.net"></div>
+      <div class="field"><label>Vanity Domain</label><input id="cfg-fqdn" placeholder="zs000123"></div>
       <div class="field"><label>Session Password</label><input id="cfg-password" placeholder="••••••"></div>
-      <div class="field"><label>Student / Customer ID</label><input id="cfg-studentid" placeholder="000312"></div>
+      <div class="field"><label>ZPA Customer ID</label><input id="cfg-studentid" placeholder="35435345343"></div>
       <button class="btn primary" onclick="saveConfig()">Save</button>
       <button class="btn ghost" onclick="clearConfig()">Clear</button>
     </div>
@@ -341,8 +341,7 @@ table.qref td:last-child{color:var(--ink-2)}
        <code><span class="tok" data-tok="fqdn"></span></code>,
        then drive real read operations through eight prompts spanning inventory, investigation, and reporting.
        An optional final task walks a guarded write with explicit HMAC confirmation.
-       Log in using Student ID <span class="tok" data-tok="studentid"></span> and
-       session password <span class="tok" data-tok="password"></span>.</p>
+       </p>
   </div>
 
   <div class="meta">
@@ -512,12 +511,11 @@ table.qref td:last-child{color:var(--ink-2)}
 
   <!-- ══════════════════════════════════════════════════════════════════ -->
   <h2 class="section">Task 2 — Operations Made Easy with Prompts</h2>
-  <p style="color:var(--ink-2);margin-top:6px">~Results maybe varied depends on your Zscaler tenant configuration</p>
 
   <details open>
     <summary><span class="tasknum">Task 2A</span> Inventory — what do we have?</summary>
     <div class="body">
-      <p>Run these three prompts in sequence. Notice you write no JSON, paginate nothing, and stitch no responses — Claude does that. Your job is to read the output critically.</p>
+      <p>Run these three prompts in sequence. Notice you write no JSON, paginate nothing, and stitch no responses — Claude does that. Notice that results maybe varied depends on your Zscaler tenant configuration.</p>
       <h3>Prompt 1 — ZPA application segments</h3>
       <div class="code">Using the Zscaler tools, list the first 10 ZPA application segments in our tenant. Show name, segment ID, and domain names. Format as a table.<button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
       <p style="color:var(--ink-2);font-size:14px">Expected: Claude calls <code>zpa_list_application_segments</code> or <code>zpa_get_application_segment</code>, parses the response, and returns a clean table — the first "aha" moment vs portal clicking.</p>
@@ -596,12 +594,13 @@ table.qref td:last-child{color:var(--ink-2)}
     <summary><span class="tasknum">Task 3.1</span> Enable a narrow write tool</summary>
     <div class="body">
       <div class="box warn"><span class="tag">⚠️ Sandbox only</span>
-        <p>This task creates and then deletes a real config object. The artifact is namespaced with <code>LAB-</code> to be obvious, but you are still making a real change. Do <strong>not</strong> run this on a tenant that serves real users. Specific options or settings maybe required and Instructor will guide you for this session</p>
+        <p>This task creates and then deletes a real config object. Do <strong>not</strong> run this on a tenant that serves real users. Specific options or settings maybe required and Instructor will guide you for this session</p>
       </div>
       <ol class="steps">
         <li>Open <b>Settings → Extensions → Zscaler MCP Server</b>.</li>
-        <li>Toggle on <b>Enable write tools</b> and set the allowlist to:
-          <div class="code">zia_create_ssl_inspection_rule, zia_create_url_filtering_rule<button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+        <li>Toggle on <b>Enable write tools</b> and set the allowlist to (you can specific the tools you want to allow or use * to allow all):
+          <div class="code">zia_create_ssl_inspection_rule, zia_create_url_filtering_rule <button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+          <div class="code"> * <button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
         </li>
         <li>Save, then <strong>fully quit and reopen Claude Desktop or even restart your Windows</strong> so the extension reloads with the new permissions.</li>
       </ol>
@@ -648,10 +647,6 @@ table.qref td:last-child{color:var(--ink-2)}
     </div>
   </details>
 
-  <div class="box mental reveal">
-    <span class="tag">🧠 Mental Note</span>
-    <p><strong>MCP = natural language → real API calls, with no glue code from you.</strong> Install the extension, paste four credentials, scope to two services, and Claude becomes an interactive interface to your entire ZIA/ZPA estate. Keep it read-only for day-to-day ops. When you need a write, use a narrow allowlist and treat every HMAC confirmation as your last human checkpoint before a change goes live.</p>
-  </div>
 
   <!-- progress checklist -->
   <div class="progress-wrap reveal">

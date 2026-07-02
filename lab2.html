@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <!--
 ==================================================================================
-  Lab 2 — Zscaler AI Guard in Proxy Mode
+  Lab 2 — Zscaler AI Guard
   Features: auto+manual dark mode · data-tok tokens
   Author: Adonis Li · Lead Technical Instructor
 ==================================================================================
@@ -10,7 +10,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Lab 2: AI Guard Proxy Mode — ZS-AIGUARD</title>
+<title>Lab 2: AI Guard — ZS-AIGUARD</title>
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -326,7 +326,7 @@ table.qref td:last-child{color:var(--ink-2)}
   </nav>
 
   <span class="eyebrow">Lab 2 · AI Guard</span>
-  <h1 class="hero-title">AI Guard <em>Proxy Mode</em></h1>
+  <h1 class="hero-title">Zscaler AI Guard</h1>
   <p class="lede">
     Place AI Guard inline between your AI application and the LLM provider —
     no scan-call code, no SDK changes. Just reroute traffic and watch the detectors work.
@@ -336,9 +336,9 @@ table.qref td:last-child{color:var(--ink-2)}
   <details class="config" open>
     <summary>Lab Configuration</summary>
     <div class="body">
-      <div class="field"><label>AI Guard Console URL</label><input id="cfg-fqdn" placeholder="adonis.us1.zseclipse.net"></div>
+      <div class="field"><label>AI Guard Console URL</label><input id="cfg-fqdn" placeholder="sdc.zslogin.net"></div>
       <div class="field"><label>Session Password</label><input id="cfg-password" placeholder="••••••"></div>
-      <div class="field"><label>Student / Customer ID</label><input id="cfg-studentid" placeholder="000312"></div>
+      <div class="field"><label>Administrator Login</label><input id="cfg-studentid" placeholder="ca-adminXXXX@thezerotrustexchange.com"></div>
       <button class="btn primary" onclick="saveConfig()">Save</button>
       <button class="btn ghost" onclick="clearConfig()">Clear</button>
     </div>
@@ -402,7 +402,7 @@ table.qref td:last-child{color:var(--ink-2)}
 
   <!-- ══════════════════════════════════════════════════════════════════ -->
   <h2 class="section">Part A — Configure the Detection Policy</h2>
-  <p style="color:var(--ink-2);margin-top:6px">~8 min · Enable detectors and activate the policy.</p>
+  <p style="color:var(--ink-2);margin-top:6px">Detectors and policy. Configruation already done in the SDC.</p>
 
   <details open>
     <summary><span class="tasknum">Task 2.2</span> Create and activate a detection policy</summary>
@@ -438,9 +438,8 @@ table.qref td:last-child{color:var(--ink-2)}
   </details>
 
   <!-- ══════════════════════════════════════════════════════════════════ -->
-  <h2 class="section">Part C — Console Test Tool (no code needed)</h2>
-  <p style="color:var(--ink-2);margin-top:6px">~15 min · The cleanest demo path — everything in the console, no client required.</p>
-
+  <h2 class="section">Part B — Console Test Tool (no code needed)</h2>
+ 
   <details open>
     <summary><span class="tasknum">Task 2.3</span> Open the proxy-mode test tool</summary>
     <div class="body">
