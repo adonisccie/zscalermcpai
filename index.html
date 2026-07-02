@@ -525,7 +525,7 @@ table.qref td:last-child{color:var(--ink-2)}
       <p style="color:var(--ink-2);font-size:14px">Expected: A summary table plus a list of disabled rules — what would otherwise require opening every rule individually.</p>
 
       <h3>Prompt 3 — URL categories filtered by keyword</h3>
-      <div class="code">List ZIA URL categories whose name contains 'AI', 'social', or 'media'. For each, show the category name, type (predefined vs custom), and approximate URL count.<button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <div class="code">List ZIA custom URL categories<button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
       <p style="color:var(--ink-2);font-size:14px">Expected: A focused list. Tests Claude's ability to filter at query time instead of dumping everything.</p>
 
       <div class="scratch">
@@ -594,11 +594,11 @@ table.qref td:last-child{color:var(--ink-2)}
     <summary><span class="tasknum">Task 3.1</span> Enable a narrow write tool</summary>
     <div class="body">
       <div class="box warn"><span class="tag">⚠️ Sandbox only</span>
-        <p>This task creates and then deletes a real config object. Do <strong>not</strong> run this on a tenant that serves real users. Specific options or settings maybe required and Instructor will guide you for this session</p>
+        <p>This task creates and then deletes a real config object. Do <strong>not</strong> run this on a tenant that serves real users. Specific settings (edit JSON files) maybe required and Instructor will guide you for this session</p>
       </div>
       <ol class="steps">
         <li>Open <b>Settings → Extensions → Zscaler MCP Server</b>.</li>
-        <li>Toggle on <b>Enable write tools</b> and set the allowlist to (you can specific the tools you want to allow or use * to allow all):
+        <li>Toggle on <b>Enable write tools</b> and set the allowlist to (specific the tools to allow or use * to allow all):
           <div class="code">zia_create_ssl_inspection_rule, zia_create_url_filtering_rule <button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
           <div class="code"> * <button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
         </li>
@@ -688,13 +688,13 @@ table.qref td:last-child{color:var(--ink-2)}
   <div class="foot">
     <div class="labnav">
       <a class="prev" href="#" style="visibility:hidden"><span class="dir">←</span><span class="ttl">—</span></a>
-      <a class="next" href="lab2333.html">
+      <a class="next" href="lab2.html">
         <span class="dir">Next →</span>
-        <span class="ttl">Lab 2: AI Guard Proxy Mode (under development)</span>
+        <span class="ttl">Lab 2: AI Guard in SDC</span>
       </a>
     </div>
     <p class="tagline">Prompt instead of click — and let the tools do the work.</p>
-    <p class="courseline">ZS-AIGUARD · Zscaler AI Guard &amp; MCP Deep Dive · © 2026 Adonis Li</p>
+    <p class="courseline">Zscaler AI Guard &amp; MCP · © 2026 Adonis Li</p>
   </div>
 
 </div><!-- /wrap -->
