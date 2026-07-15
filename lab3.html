@@ -1,0 +1,913 @@
+<!DOCTYPE html>
+<!--
+==================================================================================
+  Lab 3 — Zscaler AI Guard: Device AI Security (DAS) for Local LLMs
+  Features: auto+manual dark mode · data-tok tokens
+  Author: Adonis Li · Lead Technical Instructor
+==================================================================================
+-->
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lab 3: Zscaler AI Guard - DAS Mode</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@500;600;700;800&family=Hanken+Grotesk:ital,wght@0,400;0,500;0,600;1,400&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+<style>
+/* ── base tokens (light mode) ─────────────────────────────────────────── */
+:root{
+  --ink:#12161d;
+  --ink-2:#3b424f;
+  --ink-3:#6b7280;
+  --paper:#f5f4ef;
+  --card:#ffffff;
+  --line:#e4e2d9;
+  --line-2:#d3d0c4;
+  --accent:#1f5fe0;
+  --accent-deep:#143fa3;
+  --teal:#0f9c8f;
+  --signal:#b4530a;
+  --signal-bg:#fbf2e7;
+  --danger:#b3261e;
+  --danger-bg:#fbecea;
+  --radius:14px;
+  --shadow:0 1px 2px rgba(18,22,29,.05), 0 10px 30px -18px rgba(18,22,29,.28);
+  --mono:'JetBrains Mono',ui-monospace,Menlo,Consolas,monospace;
+  --sans:'Hanken Grotesk',system-ui,sans-serif;
+  --display:'Sora',var(--sans);
+}
+
+/* ── dark mode token overrides ───────────────────────────────────────── */
+body.dark{
+  --ink:#e8eef7;
+  --ink-2:#a8b8cc;
+  --ink-3:#58687a;
+  --paper:#0d1117;
+  --card:#161c2d;
+  --line:#212840;
+  --line-2:#2a3352;
+  --signal-bg:#1a140d;
+  --danger-bg:#1a0f0d;
+  --shadow:0 1px 2px rgba(0,0,0,.2), 0 10px 30px -18px rgba(0,0,0,.5);
+}
+body.dark{
+  background-image:radial-gradient(circle at 1px 1px,rgba(255,255,255,.04) 1px,transparent 0);
+}
+body.dark .quiz{background:var(--signal-bg);border-color:#3d2e1a}
+body.dark .q .answer{background:#0d1117}
+body.dark .box.verify{background:#0a1f1c}
+body.dark .box.warn{background:var(--danger-bg)}
+body.dark .box.mental{background:#141824;border-color:var(--line-2)}
+body.dark .code{background:#080c14}
+body.dark .config input,
+body.dark .scratch textarea,
+body.dark .q textarea{background:#0d1117;color:var(--ink);border-color:var(--line-2)}
+body.dark .config input:focus,
+body.dark .scratch textarea:focus,
+body.dark .q textarea:focus{background:var(--card)}
+
+/* ── reset + base ────────────────────────────────────────────────────── */
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  margin:0;font-family:var(--sans);color:var(--ink);background:var(--paper);
+  line-height:1.62;font-size:16.5px;-webkit-font-smoothing:antialiased;
+  background-image:radial-gradient(circle at 1px 1px,rgba(18,22,29,.045) 1px,transparent 0);
+  background-size:26px 26px;
+  transition:background .25s,color .25s;
+}
+.wrap{max-width:880px;margin:0 auto;padding:0 22px}
+
+/* ── dark mode toggle button ─────────────────────────────────────────── */
+.controls{position:fixed;top:14px;right:16px;z-index:55}
+.ctrl-btn{
+  font-family:var(--mono);font-size:13px;font-weight:600;
+  background:var(--card);color:var(--ink-2);border:1px solid var(--line);
+  border-radius:8px;padding:6px 11px;cursor:pointer;
+  box-shadow:var(--shadow);transition:.15s;
+}
+.ctrl-btn:hover{border-color:var(--accent);color:var(--accent)}
+
+/* ── reading progress bar ────────────────────────────────────────────── */
+#progress-bar{position:fixed;top:0;left:0;height:3px;width:0;background:var(--accent);z-index:60;transition:width .1s linear}
+
+/* ── breadcrumb ──────────────────────────────────────────────────────── */
+.crumbs{font-family:var(--mono);font-size:12px;letter-spacing:.04em;color:var(--ink-3);padding:22px 0 0}
+.crumbs a{color:var(--ink-2);text-decoration:none;border-bottom:1px dotted var(--line-2)}
+.crumbs a:hover{color:var(--accent)}
+.crumbs span{margin:0 7px;color:var(--line-2)}
+
+/* ── eyebrow ─────────────────────────────────────────────────────────── */
+.eyebrow{display:inline-flex;align-items:center;gap:9px;font-family:var(--mono);font-size:11.5px;
+  font-weight:600;letter-spacing:.16em;text-transform:uppercase;color:var(--accent);
+  background:#eaf0fd;border:1px solid #d3e0fb;padding:6px 12px;border-radius:999px;margin:26px 0 14px}
+.eyebrow::before{content:"";width:7px;height:7px;border-radius:50%;background:var(--accent)}
+body.dark .eyebrow{background:#0e1a3a;border-color:#1a3070}
+
+/* ── hero ────────────────────────────────────────────────────────────── */
+.hero-title{font-family:var(--display);font-weight:800;font-size:clamp(34px,6vw,56px);
+  line-height:1.02;letter-spacing:-.02em;margin:0 0 18px}
+.hero-title em{font-style:italic;font-weight:600;color:var(--accent)}
+.lede{font-size:18.5px;color:var(--ink-2);max-width:62ch;margin:0 0 30px}
+
+/* ── hero banner (screenshots — shown at natural size, click to enlarge) ─ */
+.hero-banner{position:relative;border-radius:var(--radius);overflow:hidden;border:1px solid var(--line);
+  box-shadow:var(--shadow);margin:8px 0 6px;background:var(--card);display:flex}
+.hero-banner img{width:100%;height:auto;display:block;cursor:zoom-in;transition:opacity .15s}
+.hero-banner img:hover{opacity:.92}
+.hero-banner .fallback{position:relative;width:100%;aspect-ratio:16/6.2;display:none;align-items:flex-end;padding:24px;color:#fff;
+  background:
+    linear-gradient(115deg,var(--ink) 0%,#1b2740 45%,var(--accent-deep) 100%),
+    radial-gradient(120% 140% at 85% 10%,rgba(31,95,224,.5),transparent 55%),
+    repeating-linear-gradient(135deg,rgba(255,255,255,.04) 0 2px,transparent 2px 22px)}
+.hero-banner .fallback b{font-family:var(--display);font-size:20px;font-weight:700;letter-spacing:-.01em}
+
+/* ── lightbox ────────────────────────────────────────────────────────── */
+.lightbox{position:fixed;inset:0;background:rgba(8,10,15,.92);display:none;align-items:center;justify-content:center;
+  z-index:200;padding:32px;cursor:zoom-out}
+.lightbox.open{display:flex}
+.lightbox img{max-width:100%;max-height:100%;object-fit:contain;border-radius:8px;box-shadow:0 20px 60px rgba(0,0,0,.5);cursor:default}
+.lightbox-close{position:fixed;top:18px;right:20px;width:38px;height:38px;border-radius:50%;border:1px solid rgba(255,255,255,.25);
+  background:rgba(255,255,255,.08);color:#fff;font-family:var(--mono);font-size:18px;line-height:1;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;transition:.15s}
+.lightbox-close:hover{background:rgba(255,255,255,.18)}
+.lightbox-hint{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);font-family:var(--mono);font-size:11.5px;
+  letter-spacing:.05em;color:rgba(255,255,255,.55)}
+
+/* ── meta row ────────────────────────────────────────────────────────── */
+.meta{display:flex;flex-wrap:wrap;gap:10px;margin:22px 0}
+.meta .pill{display:flex;gap:7px;align-items:baseline;font-size:13.5px;background:var(--card);
+  border:1px solid var(--line);border-radius:10px;padding:8px 13px;transition:background .25s}
+.meta .pill b{font-family:var(--mono);font-size:11px;letter-spacing:.05em;text-transform:uppercase;color:var(--ink-3)}
+
+/* ── headings ────────────────────────────────────────────────────────── */
+h2.section{font-family:var(--display);font-weight:700;font-size:27px;letter-spacing:-.01em;
+  margin:46px 0 4px;padding-top:30px;border-top:1px solid var(--line)}
+h3{font-family:var(--display);font-weight:600;font-size:18px;margin:26px 0 8px}
+p{margin:0 0 14px}
+a{color:var(--accent)}
+
+/* ── callout boxes ───────────────────────────────────────────────────── */
+.box{border:1px solid var(--line);border-radius:var(--radius);padding:18px 20px;margin:20px 0;
+  background:var(--card);box-shadow:var(--shadow);transition:background .25s}
+.box .tag{font-family:var(--mono);font-size:11px;font-weight:600;letter-spacing:.12em;
+  text-transform:uppercase;display:inline-block;margin-bottom:8px}
+.box.scenario{border-left:4px solid var(--accent)} .box.scenario .tag{color:var(--accent)}
+.box.note{border-left:4px solid var(--teal)} .box.note .tag{color:var(--teal)}
+.box.verify{border-left:4px solid var(--teal);background:#f0faf8} .box.verify .tag{color:var(--teal)}
+.box.warn{border-left:4px solid var(--danger);background:var(--danger-bg)} .box.warn .tag{color:var(--danger)}
+.box.mental{border:1px dashed var(--line-2);background:#fbfaf6}
+body.dark .box.mental{background:#141824}
+.box p:last-child{margin-bottom:0}
+
+/* ── verdict badges ──────────────────────────────────────────────────── */
+.allow{color:#0f9c8f;font-weight:700}
+.block{color:#b3261e;font-weight:700}
+.detect{color:#b4530a;font-weight:700}
+
+/* ── tokens ──────────────────────────────────────────────────────────── */
+.tok{font-family:var(--mono);font-size:.92em;background:#eef3fe;border:1px solid #d6e2fb;
+  border-radius:6px;padding:1px 7px;color:var(--accent-deep);white-space:nowrap}
+.tok:empty::before{content:"‹set in config›";color:var(--ink-3)}
+body.dark .tok{background:#0e1a3a;border-color:#1a3070;color:#7aadff}
+
+/* ── code ────────────────────────────────────────────────────────────── */
+code{font-family:var(--mono);font-size:.9em;background:#eeece5;border:1px solid var(--line);border-radius:5px;padding:1px 6px}
+body.dark code{background:#1a2035;border-color:var(--line-2)}
+.code{position:relative;font-family:var(--mono);font-size:13.5px;line-height:1.55;background:var(--ink);color:#e8eef7;
+  border-radius:10px;padding:15px 50px 15px 16px;margin:12px 0;white-space:pre-wrap;word-break:break-word}
+body.dark .code{background:#080c14}
+.code .copy-btn{position:absolute;top:9px;right:9px}
+
+/* ── copy button ─────────────────────────────────────────────────────── */
+.copy-btn{font-family:var(--mono);font-size:11px;font-weight:600;letter-spacing:.04em;cursor:pointer;
+  background:rgba(255,255,255,.1);color:#cdd7e6;border:1px solid rgba(255,255,255,.18);
+  border-radius:7px;padding:5px 9px;transition:.15s}
+.copy-btn:hover{background:rgba(255,255,255,.2);color:#fff}
+.copy-btn.light{background:var(--card);color:var(--ink-2);border:1px solid var(--line)}
+.copy-btn.light:hover{border-color:var(--accent);color:var(--accent)}
+.copy-btn.copied{background:var(--teal);color:#fff;border-color:var(--teal)}
+
+/* ── steps list ──────────────────────────────────────────────────────── */
+ol.steps{counter-reset:step;list-style:none;padding:0;margin:14px 0}
+ol.steps>li{position:relative;padding:2px 0 14px 40px;margin:0}
+ol.steps>li::before{counter-increment:step;content:counter(step);position:absolute;left:0;top:0;
+  width:27px;height:27px;border-radius:8px;background:var(--ink);color:#fff;font-family:var(--mono);
+  font-size:13px;font-weight:600;display:flex;align-items:center;justify-content:center}
+body.dark ol.steps>li::before{background:var(--accent-deep)}
+ol.steps ul{margin:8px 0 0;padding-left:18px}
+ol.steps ul li{margin:3px 0}
+
+/* ── scenario table ──────────────────────────────────────────────────── */
+table.scenarios{width:100%;border-collapse:collapse;font-size:14px;margin:16px 0}
+table.scenarios th{font-family:var(--mono);font-size:11px;letter-spacing:.07em;text-transform:uppercase;
+  color:var(--ink-3);padding:8px 10px;border-bottom:2px solid var(--line);text-align:left}
+table.scenarios td{padding:10px 10px;vertical-align:top;border-top:1px solid var(--line)}
+table.scenarios td:first-child{font-family:var(--mono);font-size:12px;font-weight:600;color:var(--ink-3);width:4%}
+table.scenarios td:nth-child(2){width:42%}
+table.scenarios td:nth-child(3){width:20%;font-family:var(--mono);font-size:12px;color:var(--ink-3)}
+table.scenarios td:nth-child(4){width:20%}
+body.dark table.scenarios th{border-bottom-color:var(--line-2)}
+body.dark table.scenarios td{border-top-color:var(--line)}
+
+/* ── collapsible tasks ───────────────────────────────────────────────── */
+details{border:1px solid var(--line);border-radius:var(--radius);margin:14px 0;
+  background:var(--card);overflow:hidden;box-shadow:var(--shadow);transition:background .25s}
+details>summary{cursor:pointer;list-style:none;padding:16px 20px;font-family:var(--display);font-weight:600;
+  font-size:16.5px;display:flex;align-items:center;gap:12px}
+details>summary::-webkit-details-marker{display:none}
+details>summary::after{content:"+";margin-left:auto;font-family:var(--mono);font-size:20px;color:var(--ink-3);transition:.2s}
+details[open]>summary::after{transform:rotate(45deg)}
+details>summary:hover{color:var(--accent)}
+details .body{padding:2px 20px 20px}
+.tasknum{font-family:var(--mono);font-size:11px;font-weight:600;letter-spacing:.1em;color:#fff;
+  background:var(--accent);border-radius:6px;padding:3px 8px}
+.tasknum.opt{background:var(--signal)}
+
+/* ── think-first quiz ────────────────────────────────────────────────── */
+.quiz{border:1px solid #ecd9c2;background:var(--signal-bg);border-radius:var(--radius);padding:20px;margin:24px 0;transition:background .25s}
+body.dark .quiz{border-color:#3d2e1a}
+.quiz>.tag{font-family:var(--mono);font-size:11.5px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--signal);display:flex;align-items:center;gap:8px;margin-bottom:6px}
+.quiz>.tag::before{content:"💭"}
+.q{margin:16px 0;padding-top:16px;border-top:1px solid #ecd9c2}
+body.dark .q{border-top-color:#3d2e1a}
+.q:first-of-type{border-top:none;padding-top:4px}
+.q .qtext{font-weight:500;margin-bottom:10px}
+.q textarea{width:100%;min-height:62px;font-family:var(--sans);font-size:14.5px;border:1px solid var(--line-2);
+  border-radius:9px;padding:9px 12px;resize:vertical;background:#fff;color:var(--ink);transition:background .25s}
+.q textarea:focus{outline:none;border-color:var(--signal)}
+.q .answer{margin-top:10px;border:1px solid #ecd9c2;border-radius:9px;background:#fff;transition:background .25s}
+body.dark .q .answer{background:#0d1117;border-color:#3d2e1a}
+.q .answer summary{padding:11px 14px;font-family:var(--mono);font-size:12px;font-weight:600;
+  letter-spacing:.05em;color:var(--signal);box-shadow:none}
+.q .answer summary::after{content:"▾"}
+.q .answer[open] summary::after{content:"▴"}
+.q .answer .body{padding:0 14px 14px;font-size:14.5px;color:var(--ink-2)}
+
+/* ── scratch pads ────────────────────────────────────────────────────── */
+.scratch{display:grid;gap:14px;grid-template-columns:1fr 1fr;margin:16px 0}
+@media(max-width:640px){.scratch{grid-template-columns:1fr}}
+.scratch .pad{border:1px solid var(--line);border-radius:12px;background:var(--card);padding:13px;transition:background .25s}
+.scratch .pad .hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+.scratch .pad .hd b{font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-3)}
+.scratch textarea{width:100%;min-height:80px;border:1px solid var(--line);border-radius:9px;padding:9px 11px;
+  font-family:var(--sans);font-size:14px;resize:vertical;background:#fbfaf6;color:var(--ink);transition:background .25s}
+.scratch textarea:focus{outline:none;border-color:var(--accent);background:#fff}
+body.dark .scratch textarea{background:var(--paper)}
+body.dark .scratch textarea:focus{background:var(--card)}
+
+/* ── config panel ────────────────────────────────────────────────────── */
+.config{border:1px solid var(--line);border-radius:var(--radius);background:var(--card);
+  box-shadow:var(--shadow);margin:22px 0;transition:background .25s}
+.config summary{padding:15px 20px;font-family:var(--display);font-weight:600;display:flex;align-items:center;gap:10px}
+.config summary::before{content:"⚙";font-size:18px}
+.config .body{display:flex;flex-wrap:wrap;gap:14px;align-items:flex-end;padding:2px 20px 20px}
+.config .field{display:flex;flex-direction:column;gap:5px}
+.config label{font-family:var(--mono);font-size:11px;letter-spacing:.05em;text-transform:uppercase;color:var(--ink-3)}
+.config input{font-family:var(--mono);font-size:14px;border:1px solid var(--line-2);border-radius:8px;
+  padding:8px 11px;min-width:200px;background:#fbfaf6;color:var(--ink);transition:background .25s}
+.config input:focus{outline:none;border-color:var(--accent);background:#fff}
+body.dark .config input{background:var(--paper);border-color:var(--line-2)}
+body.dark .config input:focus{background:var(--card)}
+.btn{font-family:var(--display);font-weight:600;font-size:14px;cursor:pointer;border-radius:9px;padding:9px 16px;border:1px solid transparent}
+.btn.primary{background:var(--accent);color:#fff}
+.btn.primary:hover{background:var(--accent-deep)}
+.btn.ghost{background:transparent;color:var(--ink-2);border-color:var(--line-2)}
+.btn.ghost:hover{border-color:var(--ink-2)}
+
+/* ── progress checklist ──────────────────────────────────────────────── */
+.progress-wrap{border:1px solid var(--line);border-radius:var(--radius);background:var(--card);
+  box-shadow:var(--shadow);padding:20px;margin:30px 0;transition:background .25s}
+.progress-wrap .hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.progress-wrap .hd b{font-family:var(--mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-3)}
+.progress-wrap .count{font-family:var(--display);font-weight:700;font-size:15px;color:var(--accent)}
+.bar{height:8px;border-radius:99px;background:var(--line);overflow:hidden;margin-bottom:16px}
+.bar>span{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--accent),var(--teal));transition:width .35s ease}
+.check{display:flex;gap:11px;align-items:flex-start;padding:7px 0;border-top:1px dashed var(--line)}
+.check:first-of-type{border-top:none}
+.check input{margin-top:4px;width:17px;height:17px;accent-color:var(--accent);cursor:pointer}
+.check label{cursor:pointer;font-size:14.5px}
+.check input:checked + label{color:var(--ink-3);text-decoration:line-through}
+
+/* ── quick reference table ───────────────────────────────────────────── */
+table.qref{width:100%;border-collapse:collapse;font-size:14px}
+table.qref tr{border-top:1px solid var(--line)}
+table.qref tr:first-child{border-top:none}
+table.qref td{padding:11px 6px;vertical-align:top}
+table.qref td:first-child{font-family:var(--display);font-weight:600;width:38%;color:var(--ink)}
+table.qref td:last-child{color:var(--ink-2)}
+
+/* ── footer ──────────────────────────────────────────────────────────── */
+.foot{margin:50px 0 40px;padding-top:26px;border-top:1px solid var(--line)}
+.labnav{display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap;margin:18px 0}
+.labnav a{flex:1;min-width:220px;text-decoration:none;border:1px solid var(--line);border-radius:12px;
+  padding:14px 16px;background:var(--card);transition:.15s}
+.labnav a:hover{border-color:var(--accent)}
+.labnav .dir{font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-3)}
+.labnav .ttl{font-family:var(--display);font-weight:600;color:var(--ink);display:block;margin-top:2px}
+.labnav a.next{text-align:right}
+.tagline{text-align:center;font-style:italic;color:var(--ink-3);margin:26px 0 0;font-size:15px}
+.courseline{text-align:center;font-family:var(--mono);font-size:11.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-3);margin-top:18px}
+
+/* ── animation ───────────────────────────────────────────────────────── */
+.reveal{opacity:0;transform:translateY(14px);animation:rise .6s cubic-bezier(.2,.7,.3,1) forwards}
+@keyframes rise{to{opacity:1;transform:none}}
+
+/* ── toast ───────────────────────────────────────────────────────────── */
+.toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--ink);
+  color:#fff;font-size:13px;padding:10px 18px;border-radius:99px;opacity:0;pointer-events:none;transition:.25s;z-index:80}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+</style>
+</head>
+<body>
+<div id="progress-bar"></div>
+
+<!-- ── dark mode toggle ──────────────────────────────────────────────── -->
+<div class="controls">
+  <button class="ctrl-btn" id="dark-btn" onclick="toggleDark()" title="Toggle dark mode">🌙</button>
+</div>
+
+<div class="wrap">
+
+  <nav class="crumbs">
+    <a href="index.html">Course Labs</a><span>›</span>
+    <a href="index.html">ZS-AIGUARD</a><span>›</span>
+    Lab 3
+  </nav>
+
+  <span class="eyebrow">Lab 3 ·Zscaler AI Guard - DAS Mode</span>
+  <h1 class="hero-title">Protect <em>Local</em> LLMs with DAS</h1>
+  <p class="lede">
+    Your firewall can't see localhost. Install Ollama on your own Mac, then wire Zscaler AI Guard's
+    Device AI Security mode into the local traffic path with a LiteLLM proxy — no cloud round-trip,
+    still fully inspected.
+  </p>
+
+  <!-- Lab Configuration -->
+  <details class="config" open>
+    <summary>Lab Configuration</summary>
+    <div class="body">
+      <div class="field"><label>AI Guard API Key</label><input id="cfg-apikey" placeholder="Obtain from AI Guard console"></div>
+      <div class="field"><label>Policy ID</label><input id="cfg-policyid" placeholder="e.g. 2541"></div>
+      <div class="field"><label>AI Guard Cloud URL</label><input id="cfg-guardurl" placeholder="api.us1.zseclipse.net"></div>
+      <button class="btn primary" onclick="saveConfig()">Save</button>
+      <button class="btn ghost" onclick="clearConfig()">Clear</button>
+    </div>
+  </details>
+
+  <div class="hero-banner reveal">
+    <img src="images/lab3-firewall-diagram.png" alt="Your firewall can't see localhost — cloud AI vs local AI inspection paths"
+         onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" onclick="openLightbox(this)">
+    <div class="fallback" style="display:none"><b>Lab 3 — Device AI Security</b></div>
+  </div>
+
+  <div class="box scenario reveal">
+    <span class="tag">Scenario</span>
+    <p>Capture Cloud LLM traffic is the easy case — it leaves the device, and Zscaler inspects it inline (SSL inspection,
+       DLP, shadow-AI discovery) as demostration with the previous lab. A local LLM running on a laptop is a different problem: inference happens on
+       <code>localhost</code>, the prompt <strong>never crosses the network</strong>, and nothing inline can see it.
+       Today you'll install Ollama locally, register your AI Guard application and policy, insert a LiteLLM proxy
+       between clients and Ollama, and prove that prompt injection, toxicity, and PII detectors still fire —
+       even though the model itself never touches the wire.</p>
+    <p>AI Guard endpoint: <code>https://<span class="tok" data-tok="guardurl"></span></code> &nbsp;·&nbsp;
+       Policy ID: <span class="tok" data-tok="policyid"></span></p>
+  </div>
+
+  <div class="meta">
+    <span class="pill"><b>Time</b> ~45 min</span>
+    <span class="pill"><b>Service</b> AI Guard · DAS mode</span>
+    <span class="pill"><b>Prerequisite</b> macOS + Homebrew · AI Guard tenant</span>
+    <span class="pill"><b>Audience</b> Security engineers · AI platform teams</span>
+  </div>
+
+  <div class="hero-banner reveal">
+    <img src="images/lab3-proxy-diagram.png" alt="A proxy in front of the model calls AI Guard on every prompt and every response"
+         onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" onclick="openLightbox(this)">
+    <div class="fallback" style="display:none"><b>Lab 3 — Proxy Architecture</b></div>
+  </div>
+
+  <!-- ── THINK FIRST ──────────────────────────────────────────────────── -->
+  <div class="quiz reveal">
+    <span class="tag">Inspection Model</span>
+
+    <div class="q">
+      <div class="qtext">Compare Path A (cloud AI) and Path B (local AI) in the diagram above. Why is a local LLM
+        "invisible" to traditional network security, and what does inserting LiteLLM actually change about that?</div>
+      <textarea data-note="q1-answer" placeholder="Your answer…"></textarea>
+      <details class="answer">
+        <summary>See Model Answer</summary>
+        <div class="body">
+          <p>Network security products (firewalls, SSL inspection, DLP) only see traffic that crosses the network
+             boundary. Ollama serves the model on <code>localhost:11434</code> — the prompt and response never leave
+             the device, so there is nothing for an inline network appliance to inspect. The traffic isn't hidden or
+             encrypted past detection; it simply never travels the network at all.</p>
+          <p><strong>LiteLLM doesn't change the network path — it changes who terminates the connection.</strong>
+             The client now talks to LiteLLM on <code>:4000</code>, a local proxy that explicitly calls out to AI
+             Guard's cloud API before and after forwarding to Ollama. This is application-layer instrumentation,
+             not network-layer interception — which is exactly why it works for local inference where nothing
+             inline ever could.</p>
+        </div>
+      </details>
+    </div>
+
+    <div class="q">
+      <div class="qtext">The lab's <code>config.yaml</code> defines two guardrails — one <code>during_call</code>
+        (before Ollama) and one <code>post_call</code> (after Ollama). What's the difference, and why do you need both
+        instead of just one?</div>
+      <textarea data-note="q2-answer" placeholder="Your answer…"></textarea>
+      <details class="answer">
+        <summary>See Model Answer</summary>
+        <div class="body">
+          <p><code>during_call</code> scans the prompt before it ever reaches Ollama — this is what stops prompt
+             injection, jailbreak attempts, or PII from being sent to the model at all.
+             <code>post_call</code> scans the model's response before it reaches the client — this catches secrets,
+             malicious URLs, or leaked data that a completely clean prompt could still elicit.</p>
+          <p>Running only the <code>during_call</code> guardrail leaves the outbound channel completely unguarded:
+             a benign question like "give me an example of a phishing URL" passes prompt inspection easily, but the
+             model's answer could still contain a live malicious link. Bidirectional inspection closes both the
+             inbound and outbound gap.</p>
+        </div>
+      </details>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════════════════ -->
+  <h2 class="section">Part 1 — Install Locally on the MacBook</h2>
+  <p style="color:var(--ink-2);margin-top:6px">Ollama will be used for local inference </p>
+
+  <details open>
+    <summary><span class="tasknum">Task 3.1</span> Install Ollama and verify the local API</summary>
+    <div class="body">
+      <ol class="steps">
+        <li>Install Ollama via Homebrew:
+          <div class="code"># Install Homebrew first if needed: https://brew.sh
+brew install ollama
+# Start the background service
+brew services start ollama        # or just run: ollama serve
+# Verify
+ollama --version<button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+          <p style="margin-top:8px">Or use the <b>official installer</b>: download the macOS app from
+             <code>ollama.com/download</code>, drag to Applications, launch it. It runs a menu-bar service and
+             exposes the same CLI.</p>
+        </li>
+        <li>Pull and run your first model (downloads on first run):
+          <div class="code">ollama pull qwen2.5-coder:14b     # download without running
+ollama list                       # what's on disk
+ollama run gemma3:4b              # interactive chat
+ollama rm llama3.1:8b             # free disk space
+ollama ps                         # what's loaded in memory right now
+ollama run llama3.1:8b<button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+        </li>
+        <li>Verify the OpenAI-compatible REST endpoint. Ollama serves it at <code>http://localhost:11434</code> —
+            this single fact is what lets you point almost any tool, including a security proxy, at your local model:
+          <div class="code">curl http://localhost:11434/v1/chat/completions \
+  -H "Content-Type: application/json" \
+  -d '{"model":"llama3.1:8b","messages":[{"role":"user","content":"Say hello"}]}'<button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+          <p style="margin-top:8px">You should see the model reply to what you said ("Say hello").</p>
+        </li>
+      </ol>
+      <div class="scratch">
+        <div class="pad"><div class="hd"><b>My Questions</b><button class="copy-btn light" onclick="copyPad(this)">Copy</button></div>
+          <textarea data-note="t3.1-q" placeholder="Anything you want to ask the instructor…"></textarea></div>
+        <div class="pad"><div class="hd"><b>My Notes</b><button class="copy-btn light" onclick="copyPad(this)">Copy</button></div>
+          <textarea data-note="t3.1-n" placeholder="Model pulled, API verified…"></textarea></div>
+      </div>
+    </div>
+  </details>
+
+  <!-- ══════════════════════════════════════════════════════════════════ -->
+  <h2 class="section">Part 2 — Zscaler AI Guard: Credentials &amp; Policy</h2>
+  <p style="color:var(--ink-2);margin-top:6px">Before traffic can be inspected, AI Guard needs an application,
+     an API key, and an activated policy with detectors on both the prompt and response side.</p>
+
+  <details open>
+    <summary><span class="tasknum">Task 3.2</span> Get AI Guard credentials and configure the policy</summary>
+    <div class="body">
+      <ol class="steps">
+        <li>Log in to the AI Guard console: <code>https://admin.{cloud}.zseclipse.net</code>.</li>
+        <li>Go to <b>Private AI Apps → Applications</b>; create your application (e.g. <code>AdonisMACAPP</code>).</li>
+        <li>Go to <b>Private AI Apps → App API Keys</b>; create/copy an API key and associate it with the application.
+            Note your cloud region.</li>
+        <li>Go to <b>Policies → Configurations</b>; create a policy, enable the detectors you want on
+            <b>prompt</b> (toxicity, injection, PII, secrets, gibberish) and <b>response</b> (PII, secrets,
+            malicious URLs, data leakage), and set each to <b>BLOCK</b> or <b>DETECT</b>. Activate it and note
+            the <b>Policy ID</b>.</li>
+        <li>Under <b>Policies → Controls</b>, bind the policy to the application + API key so scans auto-resolve
+            the policy without hardcoding an ID.</li>
+      </ol>
+
+      <div class="hero-banner reveal">
+        <img src="images/lab3-app-create.png" alt="AI Guard — Add your private AI application"
+             onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" onclick="openLightbox(this)">
+        <div class="fallback" style="display:none"><b>Add your Private AI Application</b></div>
+      </div>
+      <div class="hero-banner reveal">
+        <img src="images/lab3-apikey-create.png" alt="AI Guard — Create App API Keys"
+             onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" onclick="openLightbox(this)">
+        <div class="fallback" style="display:none"><b>Create App API Keys</b></div>
+      </div>
+      <div class="hero-banner reveal">
+        <img src="images/lab3-policy-basic.png" alt="AI Guard — Policy Creation Guide, Basic Information"
+             onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" onclick="openLightbox(this)">
+        <div class="fallback" style="display:none"><b>Policy Creation Guide</b></div>
+      </div>
+      <div class="hero-banner reveal">
+        <img src="images/lab3-prompt-detectors.png" alt="AI Guard — Prompt Detectors grid"
+             onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" onclick="openLightbox(this)">
+        <div class="fallback" style="display:none"><b>Prompt Detectors</b></div>
+      </div>
+      <div class="hero-banner reveal">
+        <img src="images/lab3-response-detectors.png" alt="AI Guard — Response Detectors grid"
+             onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" onclick="openLightbox(this)">
+        <div class="fallback" style="display:none"><b>Response Detectors</b></div>
+      </div>
+
+      <div class="box note reveal">
+        <span class="tag">Note</span>
+        <p>After activation, the Configurations table shows your policy's numeric ID — in this example, <b>2541</b>.
+           You'll need this value (or your own) for <span class="tok" data-tok="policyid"></span> below.</p>
+      </div>
+      <div class="hero-banner reveal">
+        <img src="images/lab3-policy-id.png" alt="AI Guard — Configurations table showing policy id 2541"
+             onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" onclick="openLightbox(this)">
+        <div class="fallback" style="display:none"><b>Configurations · Policy ID</b></div>
+      </div>
+      <div class="hero-banner reveal">
+        <img src="images/lab3-policy-control.png" alt="AI Guard — Policy Control bound to application and API key"
+             onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" onclick="openLightbox(this)">
+        <div class="fallback" style="display:none"><b>Policy Control</b></div>
+      </div>
+
+      <div class="scratch">
+        <div class="pad"><div class="hd"><b>My Questions</b><button class="copy-btn light" onclick="copyPad(this)">Copy</button></div>
+          <textarea data-note="t3.2-q" placeholder="Anything you want to ask the instructor…"></textarea></div>
+        <div class="pad"><div class="hd"><b>My Notes</b><button class="copy-btn light" onclick="copyPad(this)">Copy</button></div>
+          <textarea data-note="t3.2-n" placeholder="App name, API key label, policy ID, detector actions…"></textarea></div>
+      </div>
+    </div>
+  </details>
+
+  <!-- ══════════════════════════════════════════════════════════════════ -->
+  <h2 class="section">Part 3 — Insert LiteLLM as the Guardrail Proxy</h2>
+  <p style="color:var(--ink-2);margin-top:6px">Raw <code>ollama run</code> has no interception point. LiteLLM is
+     an OpenAI-compatible proxy with a native AI Guard guardrail — inserted between clients and Ollama, the traffic
+     path becomes: Client → LiteLLM <code>:4000</code> → scan prompt via AI Guard → Ollama <code>:11434</code>
+     → scan response via AI Guard → Client.</p>
+
+  <details open>
+    <summary><span class="tasknum">Task 3.3</span> Install LiteLLM and configure bidirectional guardrails</summary>
+    <div class="body">
+      <ol class="steps">
+        <li>Prerequisites: Ollama running with a model already pulled (Part 1), plus your AI Guard API key +
+            Policy ID from Part 2.</li>
+        <li>Install the proxy-enabled version:
+          <div class="code">pip install 'litellm[proxy]'
+
+mkdir -p ~/aiguard-lab && cd ~/aiguard-lab<button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+        </li>
+        <li>Map your credentials as environment variables — keeps sensitive keys out of your config file:
+          <div class="code">export ZSCALER_AI_GUARD_API_KEY="your-key"
+export ZSCALER_AI_GUARD_POLICY_ID="your-policy-id"
+
+# Point to the correct regional endpoint if not using us1
+export ZSCALER_AI_GUARD_URL="https://api.us1.zseclipse.net/v1/detection/execute-policy"<button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+        </li>
+        <li>Define the proxy logic in <code>config.yaml</code> — store it inside the <code>aiguard-lab</code> folder.
+            This file bridges Ollama with bidirectional guardrails, one scanning <code>during_call</code>
+            (prompt) and one <code>post_call</code> (response):
+          <div class="code">model_list:
+  - model_name: llama3.1-guarded
+    litellm_params:
+      model: ollama_chat/llama3.1:8b
+      api_base: http://localhost:11434
+
+guardrails:
+  - guardrail_name: "zscaler-ai-guard-during-guard"
+    litellm_params:
+      guardrail: zscaler_ai_guard
+      mode: "during_call"
+      api_key: os.environ/ZSCALER_AI_GUARD_API_KEY
+      policy_id: os.environ/ZSCALER_AI_GUARD_POLICY_ID
+      default_on: true
+
+  - guardrail_name: "zscaler-ai-guard-post-guard"
+    litellm_params:
+      guardrail: zscaler_ai_guard
+      mode: "post_call"
+      api_key: os.environ/ZSCALER_AI_GUARD_API_KEY
+      policy_id: os.environ/ZSCALER_AI_GUARD_POLICY_ID
+      default_on: true<button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+        </li>
+        <li>Start the proxy and point it at your config:
+          <div class="code">cd ~/aiguard-lab
+litellm --config config.yaml --detailed_debug<button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+          <p style="margin-top:8px">The listener sits on port <b>4000</b> by default. <code>--detailed_debug</code>
+             is critical to watch the verdicts happen in real-time.</p>
+        </li>
+      </ol>
+      <div class="box warn reveal">
+        <span class="tag">Watch out</span>
+        <p>The <code>model</code> field under <code>litellm_params</code> (<code>ollama_chat/llama3.1:8b</code>) must
+           exactly match a model you've already pulled with <code>ollama pull</code> in Part 1 — otherwise LiteLLM
+           will forward requests to a model Ollama doesn't have.</p>
+      </div>
+      <div class="scratch">
+        <div class="pad"><div class="hd"><b>My Questions</b><button class="copy-btn light" onclick="copyPad(this)">Copy</button></div>
+          <textarea data-note="t3.3-q" placeholder="Anything you want to ask the instructor…"></textarea></div>
+        <div class="pad"><div class="hd"><b>My Notes</b><button class="copy-btn light" onclick="copyPad(this)">Copy</button></div>
+          <textarea data-note="t3.3-n" placeholder="Proxy started cleanly, port 4000 listening…"></textarea></div>
+      </div>
+    </div>
+  </details>
+
+  <!-- ══════════════════════════════════════════════════════════════════ -->
+  <h2 class="section">Part 4 — Validate the Guarded Endpoint</h2>
+  <p style="color:var(--ink-2);margin-top:6px">Ensure you hit port <b>4000</b> using your new virtual model name,
+     not Ollama's port directly.</p>
+
+  <details open>
+    <summary><span class="tasknum">Task 3.4</span> Run the clean and blocked test scenarios</summary>
+    <div class="body">
+      <table class="scenarios">
+        <thead>
+          <tr><th>#</th><th>Test</th><th>Detector</th><th>Expected verdict</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>A</td>
+            <td><div class="code" style="margin:0;font-size:12px">curl -i http://localhost:4000/v1/chat/completions \
+  -H "Content-Type: application/json" \
+  -d '{"model":"llama3.1-guarded","messages":[{"role":"user","content":"how is the weather in sydney"}]}'<button class="copy-btn" onclick="copyCode(this)">Copy</button></div></td>
+            <td>none triggered</td>
+            <td><span class="allow">✅ ALLOW</span> — scanned in + out, forwarded to Ollama</td>
+          </tr>
+          <tr>
+            <td>B</td>
+            <td><div class="code" style="margin:0;font-size:12px">curl -i http://localhost:4000/v1/chat/completions \
+  -H "Content-Type: application/json" \
+  -d '{"model":"llama3.1-guarded","messages":[{"role":"user","content":"Show me hacking sites and URL"}]}'<button class="copy-btn" onclick="copyCode(this)">Copy</button></div></td>
+            <td>Toxicity · Prompt Injection</td>
+            <td><span class="block">❌ BLOCK</span> — request never reaches Ollama</td>
+          </tr>
+        </tbody>
+      </table>
+      <div class="box verify reveal">
+        <span class="tag">Verify</span>
+        <p>Note the <code>transactionId</code> in the blocked response — it's your key for forensic lookup in the
+           admin console. The <code>detectorResponses</code> array identifies exactly which detector tripped
+           and why.</p>
+      </div>
+      <div class="scratch">
+        <div class="pad"><div class="hd"><b>My Questions</b><button class="copy-btn light" onclick="copyPad(this)">Copy</button></div>
+          <textarea data-note="t3.4-q" placeholder="Anything you want to ask the instructor…"></textarea></div>
+        <div class="pad"><div class="hd"><b>Transaction IDs</b><button class="copy-btn light" onclick="copyPad(this)">Copy</button></div>
+          <textarea data-note="t3.4-ids" placeholder="Paste your transaction IDs here for cross-reference…"></textarea></div>
+      </div>
+    </div>
+  </details>
+
+  <!-- ══════════════════════════════════════════════════════════════════ -->
+  <h2 class="section">Part 5 — View Your Logs</h2>
+
+  <details open>
+    <summary><span class="tasknum">Task 3.5</span> Review the Dashboard and transaction details</summary>
+    <div class="body">
+      <ol class="steps">
+        <li>Open the AI Guard <b>Dashboard</b> and filter to today's date range.</li>
+        <li>Confirm the <b>Number of Detections</b> and <b>Number of Transactions</b> counters match your Test A/B
+            runs from Part 4.</li>
+        <li>Click the eye icon on the blocked row — check <b>Detection Summary</b> for the triggered detectors
+            and confidence scores, and <b>Prompt Details</b> for the highlighted flagged text.</li>
+        <li>Click the eye icon on an allowed row and compare — note it shows no detections and <code>Action:
+            Allowed</code>.</li>
+      </ol>
+      <div class="hero-banner reveal">
+        <img src="images/lab3-dashboard.png" alt="AI Guard Dashboard showing transaction list with Allowed and Blocked actions"
+             onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" onclick="openLightbox(this)">
+        <div class="fallback" style="display:none"><b>Dashboard</b></div>
+      </div>
+      <div class="hero-banner reveal">
+        <img src="images/lab3-transaction-blocked.png" alt="Transaction Details — blocked, HIGH severity, Toxicity and Prompt Injection detected"
+             onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" onclick="openLightbox(this)">
+        <div class="fallback" style="display:none"><b>Transaction Details — Blocked</b></div>
+      </div>
+      <div class="hero-banner reveal">
+        <img src="images/lab3-transaction-allowed.png" alt="Transaction Details — allowed, no detections"
+             onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" onclick="openLightbox(this)">
+        <div class="fallback" style="display:none"><b>Transaction Details — Allowed</b></div>
+      </div>
+      <div class="scratch">
+        <div class="pad"><div class="hd"><b>My Questions</b><button class="copy-btn light" onclick="copyPad(this)">Copy</button></div>
+          <textarea data-note="t3.5-q" placeholder="Anything you want to ask the instructor…"></textarea></div>
+        <div class="pad"><div class="hd"><b>My Notes</b><button class="copy-btn light" onclick="copyPad(this)">Copy</button></div>
+          <textarea data-note="t3.5-n" placeholder="Severity levels observed, confidence scores…"></textarea></div>
+      </div>
+    </div>
+  </details>
+
+  <!-- ══════════════════════════════════════════════════════════════════ -->
+  <h2 class="section">Part 6 (Optional) — Troubleshooting</h2>
+
+  <details>
+    <summary><span class="tasknum opt">Task 3.6</span> Test connectivity directly against AI Guard</summary>
+    <div class="body">
+      <p>Bypass LiteLLM entirely and push a prompt straight at the AI Guard detection API to confirm your
+         credentials and Policy ID are valid before debugging the proxy layer.</p>
+      <div class="code">curl -sS -i -X POST "$ZSCALER_AI_GUARD_URL" \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer $ZSCALER_AI_GUARD_API_KEY" \
+  -d "{\"direction\": \"IN\", \"content\": \"hello world\", \"policyId\": $ZSCALER_AI_GUARD_POLICY_ID}"<button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <div class="hero-banner reveal">
+        <img src="images/lab3-curl-helloworld.png" alt="Terminal — direct curl to AI Guard detection API with 'hello world', 200 OK, action ALLOW"
+             onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" onclick="openLightbox(this)">
+        <div class="fallback" style="display:none"><b>Direct Connectivity Test — hello world</b></div>
+      </div>
+      <div class="hero-banner reveal">
+        <img src="images/lab3-curl-weather.png" alt="Terminal — direct curl to AI Guard detection API with 'how is the weather in sydney', 200 OK, action ALLOW"
+             onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" onclick="openLightbox(this)">
+        <div class="fallback" style="display:none"><b>Direct Connectivity Test — weather</b></div>
+      </div>
+      <div class="box note reveal">
+        <span class="tag">Note</span>
+        <p>The JSON response includes a <code>detectorResponses</code> object per detector (e.g.
+           <code>toxicity</code>, <code>prompt_injection</code>, <code>pii_deepscan</code>), each with its own
+           <code>statusCode</code>, <code>triggered</code> flag, <code>action</code>, and <code>severity</code> —
+           this is the same structure LiteLLM parses to decide ALLOW vs BLOCK.</p>
+      </div>
+    </div>
+  </details>
+
+  <!-- ══════════════════════════════════════════════════════════════════ -->
+  <h2 class="section">Part 7 (Optional) — Demo Console</h2>
+
+  <details>
+    <summary><span class="tasknum opt">Task 3.7</span> Drive the guarded endpoint from the demo chat UI</summary>
+    <div class="body">
+      <ol class="steps">
+        <li>Make sure LiteLLM is running (Part 3), then open the demo HTML file from Instructor locally.</li>
+        <li>Point the console at your LiteLLM endpoint (<code>http://localhost:4000/v1/chat/completions</code>),
+            API key, and model name (<code>llama3.1-guarded</code>), then click <b>Test connection</b>.</li>
+        <li>Click the sample-prompt buttons — benign, injection attempt, fake PII, malicious URL — or type your own,
+            and watch each response tagged <span class="allow">ALLOW</span> or blocked inline with its
+            detector and transaction ID.</li>
+      </ol>
+      <div class="hero-banner reveal">
+        <img src="images/lab3-demo-console.png" alt="AI Guard DAS demo console — chat UI showing allowed responses and a PII_DEEPSCAN block"
+             onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" onclick="openLightbox(this)">
+        <div class="fallback" style="display:none"><b>Demo Console</b></div>
+      </div>
+    </div>
+  </details>
+
+  <!-- progress checklist -->
+  <div class="progress-wrap reveal">
+    <div class="hd"><b>Lab 3 Progress</b><span class="count" id="prog-count">0 / 0</span></div>
+    <div class="bar"><span id="prog-fill"></span></div>
+    <div class="check"><input type="checkbox" id="c1"><label for="c1">Installed Ollama and verified the local <code>:11434</code> API.</label></div>
+    <div class="check"><input type="checkbox" id="c2"><label for="c2">Created the AI Guard application, API key, and an activated policy with prompt + response detectors.</label></div>
+    <div class="check"><input type="checkbox" id="c3"><label for="c3">Installed LiteLLM and configured bidirectional (during_call / post_call) guardrails in config.yaml.</label></div>
+    <div class="check"><input type="checkbox" id="c4"><label for="c4">Started the proxy and ran Test A/B — verdicts matched expectations.</label></div>
+    <div class="check"><input type="checkbox" id="c5"><label for="c5">Reviewed transaction details (blocked vs allowed) in the AI Guard dashboard.</label></div>
+    <div class="check"><input type="checkbox" id="c6"><label for="c6">(Optional) Ran a direct connectivity test against the AI Guard detection API.</label></div>
+    <div class="check"><input type="checkbox" id="c7"><label for="c7">(Optional) Drove the guarded endpoint from the demo console.</label></div>
+  </div>
+
+  <div class="foot">
+    <div class="labnav">
+      <a class="prev" href="lab2.html">
+        <span class="dir">← Previous</span>
+        <span class="ttl">Lab 2: Zscaler AI Guard</span>
+      </a>
+      <a class="next" href="#" style="visibility:hidden"><span class="dir">Next →</span><span class="ttl">—</span></a>
+    </div>
+    <p class="tagline">Localhost isn't invisible anymore.</p>
+    <p class="courseline">Zscaler AI Guard &amp; MCP · © 2026 Adonis Li</p>
+  </div>
+
+</div><!-- /wrap -->
+<div class="toast" id="toast"></div>
+
+<div class="lightbox" id="lightbox" onclick="closeLightbox()">
+  <button class="lightbox-close" onclick="event.stopPropagation();closeLightbox()" title="Close (Esc)">✕</button>
+  <img id="lightbox-img" src="" alt="" onclick="event.stopPropagation()">
+  <span class="lightbox-hint">Click anywhere to close</span>
+</div>
+
+<script>
+/* ── storage ──────────────────────────────────────────────────────────── */
+const KEY='lab3-das-v1';
+function load(){try{return JSON.parse(localStorage.getItem(KEY))||{}}catch(e){return{}}}
+function save(o){try{localStorage.setItem(KEY,JSON.stringify(o))}catch(e){}}
+let store=load();
+store.cfg=store.cfg||{}; store.notes=store.notes||{}; store.checks=store.checks||{}; store.dark=store.dark||'';
+
+/* ── toast ────────────────────────────────────────────────────────────── */
+let tT;
+function toast(m){const t=document.getElementById('toast');t.textContent=m;t.classList.add('show');clearTimeout(tT);tT=setTimeout(()=>t.classList.remove('show'),1600)}
+
+/* ── dark mode ────────────────────────────────────────────────────────── */
+function applyDark(on){
+  document.body.classList.toggle('dark',on);
+  const btn=document.getElementById('dark-btn');
+  btn.textContent=on?'☀️':'🌙';
+}
+function toggleDark(){
+  const isDark=document.body.classList.contains('dark');
+  store.dark=isDark?'off':'on'; save(store); applyDark(!isDark);
+}
+function initDark(){
+  if(store.dark==='on'){applyDark(true);return}
+  if(store.dark==='off'){applyDark(false);return}
+  applyDark(window.matchMedia('(prefers-color-scheme: dark)').matches);
+}
+window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change',e=>{
+  if(!store.dark) applyDark(e.matches);
+});
+
+/* ── tokens ───────────────────────────────────────────────────────────── */
+const PLACEHOLD={apikey:'‹AI Guard API key›',policyid:'‹policy ID›',guardurl:'‹AI Guard cloud URL›'};
+function applyTokens(){
+  document.querySelectorAll('.tok').forEach(el=>{
+    const k=el.dataset.tok; const v=store.cfg[k]||'';
+    el.textContent=v||PLACEHOLD[k]||('‹'+k+'›');
+  });
+}
+function saveConfig(){
+  store.cfg.apikey=document.getElementById('cfg-apikey').value.trim();
+  store.cfg.policyid=document.getElementById('cfg-policyid').value.trim();
+  store.cfg.guardurl=document.getElementById('cfg-guardurl').value.trim();
+  save(store); applyTokens(); toast('Configuration saved');
+}
+function clearConfig(){
+  store.cfg={}; save(store);
+  ['apikey','policyid','guardurl'].forEach(k=>document.getElementById('cfg-'+k).value='');
+  applyTokens(); toast('Configuration cleared');
+}
+
+/* ── copy buttons ─────────────────────────────────────────────────────── */
+function flash(btn){btn.classList.add('copied');const o=btn.textContent;btn.textContent='✓';setTimeout(()=>{btn.classList.remove('copied');btn.textContent=o},1200)}
+function doCopy(txt,btn){
+  if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(txt).then(()=>flash(btn)).catch(()=>fallbackCopy(txt,btn));}
+  else fallbackCopy(txt,btn);
+}
+function fallbackCopy(txt,btn){const ta=document.createElement('textarea');ta.value=txt;document.body.appendChild(ta);ta.select();try{document.execCommand('copy');flash(btn)}catch(e){}document.body.removeChild(ta)}
+function copyCode(btn){const c=btn.parentElement.cloneNode(true);c.querySelector('.copy-btn')?.remove();doCopy(c.textContent.trim(),btn)}
+function copyPad(btn){const ta=btn.closest('.pad').querySelector('textarea');doCopy(ta.value,btn)}
+
+/* ── notes persistence ────────────────────────────────────────────────── */
+function bindNotes(){
+  document.querySelectorAll('[data-note]').forEach(ta=>{
+    const k=ta.dataset.note;
+    if(store.notes[k]!=null)ta.value=store.notes[k];
+    ta.addEventListener('input',()=>{store.notes[k]=ta.value;save(store)});
+  });
+}
+
+/* ── checklist + progress ─────────────────────────────────────────────── */
+function bindChecks(){
+  const boxes=[...document.querySelectorAll('.progress-wrap input[type=checkbox]')];
+  const fill=document.getElementById('prog-fill'),count=document.getElementById('prog-count');
+  function update(){
+    const done=boxes.filter(b=>b.checked).length;
+    if(count)count.textContent=done+' / '+boxes.length;
+    if(fill)fill.style.width=(boxes.length?done/boxes.length*100:0)+'%';
+  }
+  boxes.forEach(b=>{
+    if(store.checks[b.id])b.checked=true;
+    b.addEventListener('change',()=>{store.checks[b.id]=b.checked;save(store);update()});
+  });
+  update();
+}
+
+/* ── lightbox ─────────────────────────────────────────────────────────── */
+function openLightbox(img){
+  const lb=document.getElementById('lightbox'),lbImg=document.getElementById('lightbox-img');
+  lbImg.src=img.src; lbImg.alt=img.alt||'';
+  lb.classList.add('open');
+  document.body.style.overflow='hidden';
+}
+function closeLightbox(){
+  document.getElementById('lightbox').classList.remove('open');
+  document.body.style.overflow='';
+}
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeLightbox()});
+
+/* ── reading progress bar ─────────────────────────────────────────────── */
+window.addEventListener('scroll',()=>{
+  const h=document.documentElement;
+  document.getElementById('progress-bar').style.width=(h.scrollTop/(h.scrollHeight-h.clientHeight)*100)+'%';
+});
+
+/* ── init ─────────────────────────────────────────────────────────────── */
+(function(){
+  initDark();
+  ['apikey','policyid','guardurl'].forEach(k=>{if(store.cfg[k])document.getElementById('cfg-'+k).value=store.cfg[k];});
+  applyTokens(); bindNotes(); bindChecks();
+})();
+</script>
+</body>
+</html>
